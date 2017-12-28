@@ -18,3 +18,5 @@ Todo:
 * [x] Delete
 * [x] List
 * [x] Scale
+
+Docker image: [`functions/faas-swarm`](https://hub.docker.com/r/functions/faas-swarm/tags/)
