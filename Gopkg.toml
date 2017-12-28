@@ -1,0 +1,24 @@
+[[constraint]]
+  name = "github.com/moby/moby"
+  revision = "4a804016ab8b9fd55a45cff9687a1de12dee5eb7"
+
+[[constraint]]
+  name = "github.com/docker/go-units"
+  version = "0.3.2"
+
+[[constraint]]
+  name = "github.com/gorilla/mux"
+  version = "1.6.0"
+
+[[constraint]]
+  name = "github.com/openfaas/faas"
+  version = "0.6.15"
+
+[[constraint]]
+  name = "github.com/openfaas/faas-provider"
+  version = "0.5.0"
+
+# match docker/distribution revision with moby
+[[override]]
+  name = "github.com/docker/distribution"
+  revision = "edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c"
