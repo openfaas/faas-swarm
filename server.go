@@ -21,13 +21,15 @@ func main() {
 	var err error
 	dockerClient, err := client.NewEnvClient()
 	if err != nil {
-		log.Fatal("Error with Docker client.")
+		log.Fatalf("Error with Docker client: %s.", err.Error())
 	}
 	fmt.Println(dockerClient)
+
 	dockerVersion, versionErr := dockerClient.ServerVersion(context.Background())
 	if versionErr != nil {
-		log.Fatal("Error with Docker server.\n", err)
+		log.Fatalf("Error with Docker server: %s", versionErr.Error())
 	}
+
 	log.Printf("Docker API version: %s, %s\n", dockerVersion.APIVersion, dockerVersion.Version)
 	// How many times to reschedule a function.
 	maxRestarts := uint64(5)
@@ -43,7 +45,7 @@ func main() {
 		ReplicaReader:  handlers.ReplicaReader(dockerClient),
 		ReplicaUpdater: handlers.ReplicaUpdater(dockerClient),
 		UpdateHandler:  handlers.UpdateHandler(dockerClient, maxRestarts, restartDelay),
-		// Health:        handlers.Health(),
+		Health:        handlers.Health(),
 	}
 
 	var port int
