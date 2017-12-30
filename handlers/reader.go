@@ -16,7 +16,7 @@ import (
 )
 
 // FunctionReader reads functions from Swarm metadata
-func FunctionReader(wildcard bool, c *client.Client) http.HandlerFunc {
+func FunctionReader(wildcard bool, c client.ServiceAPIClient) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -24,6 +24,7 @@ func FunctionReader(wildcard bool, c *client.Client) http.HandlerFunc {
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
+			return
 		}
 
 		functionBytes, _ := json.Marshal(functions)
@@ -34,8 +35,8 @@ func FunctionReader(wildcard bool, c *client.Client) http.HandlerFunc {
 	}
 }
 
-func readServices(c *client.Client) ([]requests.Function, error) {
-
+func readServices(c client.ServiceAPIClient) ([]requests.Function, error) {
+	functions := []requests.Function{}
 	serviceFilter := filters.NewArgs()
 
 	options := types.ServiceListOptions{
@@ -44,12 +45,10 @@ func readServices(c *client.Client) ([]requests.Function, error) {
 
 	services, err := c.ServiceList(context.Background(), options)
 	if err != nil {
-		log.Println("Error getting service list:", err)
-		return nil, fmt.Errorf("error getting service list")
-	}
+		log.Printf("Error getting service list: %s", err.Error())
 
-	// TODO: Filter only "faas" functions (via metadata?)
-	functions := []requests.Function{}
+		return functions, fmt.Errorf("error getting service list: %s", err.Error())
+	}
 
 	for _, service := range services {
 

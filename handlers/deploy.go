@@ -161,6 +161,7 @@ func BuildEncodedAuthConfig(basicAuthB64 string, dockerImage string) (string, er
 	if err != nil {
 		return "", err
 	}
+
 	// build encoded registry auth config
 	buf, err := json.Marshal(types.AuthConfig{
 		Username:      user,
