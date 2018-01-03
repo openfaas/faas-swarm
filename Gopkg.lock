@@ -4,10 +4,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/Azure/go-ansiterm"
-  packages = [
-    ".",
-    "winterm"
-  ]
+  packages = [".","winterm"]
   revision = "d6e3b3328b783f23731bc4d058875b0371ff8109"
 
 [[projects]]
@@ -23,64 +20,25 @@
   revision = "cd527374f1e5bff4938207604a14f2e38a9cf512"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/docker/cli"
+  packages = ["opts"]
+  revision = "1a64b1b7998d996aaf212dc8f24c4fd7bf993b9f"
+
+[[projects]]
   name = "github.com/docker/distribution"
-  packages = [
-    ".",
-    "context",
-    "digestset",
-    "reference",
-    "registry/api/errcode",
-    "registry/api/v2",
-    "registry/client",
-    "registry/client/auth",
-    "registry/client/auth/challenge",
-    "registry/client/transport",
-    "registry/storage/cache",
-    "registry/storage/cache/memory",
-    "uuid"
-  ]
+  packages = [".","context","digestset","reference","registry/api/errcode","registry/api/v2","registry/client","registry/client/auth","registry/client/auth/challenge","registry/client/transport","registry/storage/cache","registry/storage/cache/memory","uuid"]
   revision = "edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c"
 
 [[projects]]
   branch = "master"
   name = "github.com/docker/docker"
-  packages = [
-    "api",
-    "api/types",
-    "api/types/blkiodev",
-    "api/types/container",
-    "api/types/events",
-    "api/types/filters",
-    "api/types/image",
-    "api/types/mount",
-    "api/types/network",
-    "api/types/registry",
-    "api/types/strslice",
-    "api/types/swarm",
-    "api/types/swarm/runtime",
-    "api/types/time",
-    "api/types/versions",
-    "api/types/volume",
-    "client",
-    "pkg/ioutils",
-    "pkg/jsonmessage",
-    "pkg/longpath",
-    "pkg/stringid",
-    "pkg/tarsum",
-    "pkg/term",
-    "pkg/term/windows",
-    "registry",
-    "registry/resumable"
-  ]
+  packages = ["api","api/types","api/types/blkiodev","api/types/container","api/types/events","api/types/filters","api/types/image","api/types/mount","api/types/network","api/types/registry","api/types/strslice","api/types/swarm","api/types/swarm/runtime","api/types/time","api/types/versions","api/types/volume","client","pkg/ioutils","pkg/jsonmessage","pkg/longpath","pkg/stringid","pkg/tarsum","pkg/term","pkg/term/windows","registry","registry/resumable"]
   revision = "4a804016ab8b9fd55a45cff9687a1de12dee5eb7"
 
 [[projects]]
   name = "github.com/docker/go-connections"
-  packages = [
-    "nat",
-    "sockets",
-    "tlsconfig"
-  ]
+  packages = ["nat","sockets","tlsconfig"]
   revision = "3ede32e2033de7505e6500d6c868c2b9ed9f169d"
   version = "v0.3.0"
 
@@ -116,10 +74,7 @@
 
 [[projects]]
   name = "github.com/opencontainers/image-spec"
-  packages = [
-    "specs-go",
-    "specs-go/v1"
-  ]
+  packages = ["specs-go","specs-go/v1"]
   revision = "d60099175f88c47cd379c4738d158884749ed235"
   version = "v1.0.1"
 
@@ -131,10 +86,7 @@
 
 [[projects]]
   name = "github.com/openfaas/faas-provider"
-  packages = [
-    ".",
-    "types"
-  ]
+  packages = [".","types"]
   revision = "c92df42e53902c7bc550436fd0ecc5790fdb11a4"
   version = "0.5"
 
@@ -159,25 +111,18 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = [
-    "context",
-    "context/ctxhttp",
-    "proxy"
-  ]
+  packages = ["context","context/ctxhttp","proxy"]
   revision = "d866cfc389cec985d6fda2859936a575a55a3ab6"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = [
-    "unix",
-    "windows"
-  ]
+  packages = ["unix","windows"]
   revision = "83801418e1b59fb1880e363299581ee543af32ca"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1aa1cb60593ae03e60bd3341448672a6b0038dfd13abb695ddc43f3aaed30625"
+  inputs-digest = "50184708015ab96f10a43a9e34e4060b0d8a5337f31e3418edf64296bbafdf3d"
   solver-name = "gps-cdcl"
   solver-version = 1
