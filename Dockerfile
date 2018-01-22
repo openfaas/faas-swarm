@@ -1,4 +1,5 @@
-FROM golang:1.9.2
+# Build stage
+FROM golang:1.9.2 as builder
 
 RUN mkdir -p /go/src/github.com/openfaas/faas-swarm/
 
@@ -16,8 +17,11 @@ RUN license-check -path ./ --verbose=false "Alex Ellis" "OpenFaaS Project"
 RUN gofmt -l -d $(find . -type f -name '*.go' -not -path "./vendor/*") \
   && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o faas-swarm .
 
+# Release stage
 FROM alpine:3.6
+
 RUN apk --no-cache add ca-certificates
+
 WORKDIR /root/
 
 EXPOSE 8080
@@ -25,6 +29,6 @@ EXPOSE 8080
 ENV http_proxy      ""
 ENV https_proxy     ""
 
-COPY --from=0 /go/src/github.com/openfaas/faas-swarm/faas-swarm    .
+COPY --from=builder /go/src/github.com/openfaas/faas-swarm/faas-swarm    .
 
 CMD ["./faas-swarm"]
