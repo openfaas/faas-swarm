@@ -47,21 +47,19 @@ func FunctionProxy(wildcard bool, client *client.Client) http.HandlerFunc {
 
 		switch r.Method {
 		case "POST", "GET":
-			log.Print(r.Header)
+			// log.Print(r.Header)
 
 			xFunctionHeader := r.Header["X-Function"]
 			if len(xFunctionHeader) > 0 {
 				log.Print("X-Function: ", xFunctionHeader)
 			}
 
-			vars2 := mux.Vars(r)
-			// service := vars2["name"]
-			fmt.Println(vars2)
 			// getServiceName
 			var serviceName string
 			if wildcard {
 				vars := mux.Vars(r)
-				fmt.Println("vars ", vars)
+				// fmt.Println("vars ", vars)
+
 				name := vars["name"]
 				serviceName = name
 			} else if len(xFunctionHeader) > 0 {
@@ -102,7 +100,7 @@ func lookupInvoke(w http.ResponseWriter, r *http.Request, name string, c *client
 }
 
 func lookupSwarmService(serviceName string, c *client.Client) (bool, error) {
-	fmt.Printf("Resolving: '%s'\n", serviceName)
+	// fmt.Printf("Resolving: '%s'\n", serviceName)
 	serviceFilter := filters.NewArgs()
 	serviceFilter.Add("name", serviceName)
 	services, err := c.ServiceList(context.Background(), types.ServiceListOptions{Filters: serviceFilter})
