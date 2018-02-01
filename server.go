@@ -45,7 +45,7 @@ func main() {
 		ReplicaReader:  handlers.ReplicaReader(dockerClient),
 		ReplicaUpdater: handlers.ReplicaUpdater(dockerClient),
 		UpdateHandler:  handlers.UpdateHandler(dockerClient, maxRestarts, restartDelay),
-		Health:        handlers.Health(),
+		Health:         handlers.Health(),
 	}
 
 	var port int
