@@ -12,3 +12,10 @@ before_install:
     
 script:
     - make
+
+after_success:
+    - if [ ! -s "$TRAVIS_TAG" ] ; then 
+        docker tag $DOCKER_NS/faas-swarm:latest-dev $DOCKER_NS/faas-swarm:$TRAVIS_TAG;
+        docker login -u=$DOCKER_USERNAME -p=$DOCKER_PASSWORD;
+        TAG=$TRAVIS_TAG make push;
+        fi
