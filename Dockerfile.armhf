@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.9.2 as builder
+FROM golang:1.9.4 as builder
 
 RUN mkdir -p /go/src/github.com/openfaas/faas-swarm/
 
