@@ -14,6 +14,7 @@ import (
 	"github.com/openfaas/faas-provider"
 	bootTypes "github.com/openfaas/faas-provider/types"
 	"github.com/openfaas/faas-swarm/handlers"
+	"github.com/openfaas/faas-swarm/types"
 )
 
 func main() {
@@ -37,6 +38,13 @@ func main() {
 	// Delay between container restarts
 	restartDelay := time.Second * 5
 
+	readConfig := types.ReadConfig{}
+	osEnv := types.OsEnv{}
+	cfg := readConfig.Read(osEnv)
+
+	log.Printf("HTTP Read Timeout: %s\n", cfg.ReadTimeout)
+	log.Printf("HTTP Write Timeout: %s\n", cfg.WriteTimeout)
+
 	bootstrapHandlers := bootTypes.FaaSHandlers{
 		FunctionProxy:  handlers.FunctionProxy(true, dockerClient),
 		DeleteHandler:  handlers.DeleteHandler(dockerClient),
@@ -51,8 +59,8 @@ func main() {
 	var port int
 	port = 8080
 	bootstrapConfig := bootTypes.FaaSConfig{
-		ReadTimeout:  time.Second * 10,
-		WriteTimeout: time.Second * 10,
+		ReadTimeout:  cfg.ReadTimeout,
+		WriteTimeout: cfg.WriteTimeout,
 		TCPPort:      &port,
 	}
 

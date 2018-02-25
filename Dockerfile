@@ -6,8 +6,8 @@ RUN mkdir -p /go/src/github.com/openfaas/faas-swarm/
 WORKDIR /go/src/github.com/openfaas/faas-swarm
 
 COPY vendor     vendor
-COPY handlers	handlers
-
+COPY handlers	  handlers
+COPY types      types
 COPY server.go  .
 
 RUN curl -sL https://github.com/alexellis/license-check/releases/download/0.2.2/license-check > /usr/bin/license-check \
