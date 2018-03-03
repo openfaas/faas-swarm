@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 	"github.com/gorilla/mux"
 	"github.com/openfaas/faas/gateway/requests"
@@ -39,10 +43,33 @@ func ReplicaReader(c *client.Client) http.HandlerFunc {
 			return
 		}
 
+		found.AvailableReplicas = getAvailableReplicas(c, found.Name)
+
 		functionBytes, _ := json.Marshal(found)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(200)
 		w.Write(functionBytes)
 
 	}
+}
+
+func getAvailableReplicas(c *client.Client, service string) uint64 {
+
+	taskFilter := filters.NewArgs()
+	taskFilter.Add("_up-to-date", "true")
+	taskFilter.Add("service", service)
+	taskFilter.Add("desired-state", "running")
+	tasks, err := c.TaskList(context.Background(), types.TaskListOptions{Filters: taskFilter})
+	if err != nil {
+		log.Printf("getAvailableReplicas for %s failed %v", service, err)
+		return 0
+	}
+	replicas := uint64(0)
+	for _, task := range tasks {
+		if task.Status.State == swarm.TaskStateRunning {
+			replicas++
+		}
+	}
+
+	return replicas
 }
