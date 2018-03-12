@@ -61,6 +61,15 @@ func DeployHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 			return
 		}
 
+		if len(request.Network) == 0 {
+			networkValue, networkErr := lookupNetwork(c)
+			if networkErr != nil {
+				log.Println("Error querying networks", networkErr)
+			} else {
+				request.Network = networkValue
+			}
+		}
+
 		spec := makeSpec(&request, maxRestarts, restartDelay, secrets)
 
 		response, err := c.ServiceCreate(context.Background(), spec, options)
@@ -72,6 +81,25 @@ func DeployHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 		}
 		log.Println(response.ID, response.Warnings)
 	}
+}
+
+func lookupNetwork(c *client.Client) (string, error) {
+	networkFilters := filters.NewArgs()
+	networkFilters.Add("label", "openfaas=true")
+	networkListOptions := types.NetworkListOptions{
+		Filters: networkFilters,
+	}
+
+	networks, networkErr := c.NetworkList(context.Background(), networkListOptions)
+	if networkErr != nil {
+		return "", nil
+	}
+
+	if len(networks) > 0 {
+		return networks[0].Name, nil
+	}
+
+	return "", nil
 }
 
 func makeSpec(request *requests.CreateFunctionRequest, maxRestarts uint64, restartDelay time.Duration, secrets []*swarm.SecretReference) swarm.ServiceSpec {
