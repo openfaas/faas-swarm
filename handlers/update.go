@@ -54,6 +54,15 @@ func UpdateHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 			return
 		}
 
+		if len(request.Network) == 0 {
+			networkValue, networkErr := lookupNetwork(c)
+			if networkErr != nil {
+				log.Println("Error querying networks", networkErr)
+			} else {
+				request.Network = networkValue
+			}
+		}
+
 		updateSpec(&request, &service.Spec, maxRestarts, restartDelay, secrets)
 
 		updateOpts := types.ServiceUpdateOptions{}
