@@ -26,6 +26,16 @@ type HasEnv interface {
 type ReadConfig struct {
 }
 
+func parseIntValue(val string, fallback int) int {
+	if len(val) > 0 {
+		parsedVal, parseErr := strconv.Atoi(val)
+		if parseErr == nil && parsedVal >= 0 {
+			return parsedVal
+		}
+	}
+	return fallback
+}
+
 func parseIntOrDurationValue(val string, fallback time.Duration) time.Duration {
 	if len(val) > 0 {
 		parsedVal, parseErr := strconv.Atoi(val)
@@ -56,6 +66,9 @@ func (ReadConfig) Read(hasEnv HasEnv) BootstrapConfig {
 	readTimeout := parseIntOrDurationValue(hasEnv.Getenv("read_timeout"), time.Second*10)
 	writeTimeout := parseIntOrDurationValue(hasEnv.Getenv("write_timeout"), time.Second*10)
 
+	const defaultPort = 8080
+
+	cfg.TCPPort = parseIntValue(hasEnv.Getenv("port"), defaultPort)
 	cfg.ReadTimeout = readTimeout
 	cfg.WriteTimeout = writeTimeout
 
@@ -66,4 +79,5 @@ func (ReadConfig) Read(hasEnv HasEnv) BootstrapConfig {
 type BootstrapConfig struct {
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
+	TCPPort      int
 }

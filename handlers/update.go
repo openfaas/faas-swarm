@@ -86,7 +86,9 @@ func UpdateHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 			w.Write([]byte("Update error: " + err.Error()))
 			return
 		}
-		log.Println(response.Warnings)
+		if response.Warnings != nil {
+			log.Println(response.Warnings)
+		}
 	}
 }
 

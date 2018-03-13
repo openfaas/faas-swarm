@@ -47,7 +47,6 @@ func FunctionProxy(wildcard bool, client *client.Client) http.HandlerFunc {
 
 		switch r.Method {
 		case "POST", "GET":
-			// log.Print(r.Header)
 
 			xFunctionHeader := r.Header["X-Function"]
 			if len(xFunctionHeader) > 0 {
@@ -57,10 +56,9 @@ func FunctionProxy(wildcard bool, client *client.Client) http.HandlerFunc {
 			// getServiceName
 			var serviceName string
 			if wildcard {
-				vars := mux.Vars(r)
-				// fmt.Println("vars ", vars)
+				muxVars := mux.Vars(r)
 
-				name := vars["name"]
+				name := muxVars["name"]
 				serviceName = name
 			} else if len(xFunctionHeader) > 0 {
 				serviceName = xFunctionHeader[0]
@@ -142,7 +140,8 @@ func invokeService(w http.ResponseWriter, r *http.Request, service string, forwa
 
 	response, err := proxyClient.Do(request)
 	if err != nil {
-		log.Print(err)
+		log.Printf("Error, can't reach service: %s, %s\n", service, err)
+
 		writeHead(service, http.StatusInternalServerError, w)
 		buf := bytes.NewBufferString("Can't reach service: " + service)
 		w.Write(buf.Bytes())

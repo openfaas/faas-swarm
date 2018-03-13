@@ -13,11 +13,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// ScaleServiceRequest request to scale a function
 type ScaleServiceRequest struct {
 	ServiceName string `json:"serviceName"`
 	Replicas    uint64 `json:"replicas"`
 }
 
+// ReplicaUpdater updates a function
 func ReplicaUpdater(c *client.Client) http.HandlerFunc {
 	serviceQuery := NewSwarmServiceQuery(c)
 
@@ -26,17 +28,22 @@ func ReplicaUpdater(c *client.Client) http.HandlerFunc {
 		vars := mux.Vars(r)
 		functionName := vars["name"]
 
+		log.Printf("ReplicaUpdater - updating function: %s\n", functionName)
+
 		req := ScaleServiceRequest{}
 
 		if r.Body != nil {
 			defer r.Body.Close()
+
 			bytesIn, _ := ioutil.ReadAll(r.Body)
 			marshalErr := json.Unmarshal(bytesIn, &req)
 			if marshalErr != nil {
-				w.WriteHeader(http.StatusBadRequest)
 				msg := "Cannot parse request. Please pass valid JSON."
-				w.Write([]byte(msg))
+
 				log.Println(msg, marshalErr)
+
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(msg))
 				return
 			}
 		}

@@ -5,7 +5,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -24,7 +23,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error with Docker client: %s.", err.Error())
 	}
-	fmt.Println(dockerClient)
 
 	dockerVersion, versionErr := dockerClient.ServerVersion(context.Background())
 	if versionErr != nil {
@@ -56,12 +54,10 @@ func main() {
 		Health:         handlers.Health(),
 	}
 
-	var port int
-	port = 8080
 	bootstrapConfig := bootTypes.FaaSConfig{
 		ReadTimeout:  cfg.ReadTimeout,
 		WriteTimeout: cfg.WriteTimeout,
-		TCPPort:      &port,
+		TCPPort:      &cfg.TCPPort,
 	}
 
 	bootstrap.Serve(&bootstrapHandlers, &bootstrapConfig)

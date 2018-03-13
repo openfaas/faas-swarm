@@ -55,7 +55,8 @@ func DeployHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 
 		secrets, err := makeSecretsArray(c, request.Secrets)
 		if err != nil {
-			log.Println(err)
+			log.Printf("Deployment error: %s\n", err)
+
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Deployment error: " + err.Error()))
 			return
@@ -64,7 +65,7 @@ func DeployHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 		if len(request.Network) == 0 {
 			networkValue, networkErr := lookupNetwork(c)
 			if networkErr != nil {
-				log.Println("Error querying networks", networkErr)
+				log.Printf("Error querying networks: %s\n", networkErr)
 			} else {
 				request.Network = networkValue
 			}
@@ -74,12 +75,17 @@ func DeployHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 
 		response, err := c.ServiceCreate(context.Background(), spec, options)
 		if err != nil {
-			log.Println("Error creating service:", err)
+
+			log.Printf("Error creating service: %s\n", err)
+
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Deployment error: " + err.Error()))
 			return
 		}
-		log.Println(response.ID, response.Warnings)
+
+		if len(response.Warnings) > 0 {
+			log.Println(response.Warnings)
+		}
 	}
 }
 
