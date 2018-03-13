@@ -7,6 +7,7 @@ WORKDIR /go/src/github.com/openfaas/faas-swarm
 
 COPY vendor     vendor
 COPY handlers	handlers
+COPY types      types
 
 COPY server.go  .
 
