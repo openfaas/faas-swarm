@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -18,7 +19,10 @@ import (
 func ReplicaReader(c *client.Client) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Update replicas")
+		vars := mux.Vars(r)
+		functionName := vars["name"]
+
+		log.Printf("ReplicaReader - reading function: %s\n", functionName)
 
 		functions, err := readServices(c)
 		if err != nil {
@@ -26,9 +30,6 @@ func ReplicaReader(c *client.Client) http.HandlerFunc {
 			w.Write([]byte(err.Error()))
 			return
 		}
-
-		vars := mux.Vars(r)
-		functionName := vars["name"]
 
 		var found *requests.Function
 		for _, function := range functions {
@@ -43,27 +44,34 @@ func ReplicaReader(c *client.Client) http.HandlerFunc {
 			return
 		}
 
-		found.AvailableReplicas = getAvailableReplicas(c, found.Name)
+		replicas, replicaErr := getAvailableReplicas(c, found.Name)
+		if replicaErr != nil {
+			log.Printf("%s\n", replicaErr.Error())
+
+			// Fail-over as 0
+		}
+
+		found.AvailableReplicas = replicas
 
 		functionBytes, _ := json.Marshal(found)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(200)
 		w.Write(functionBytes)
-
 	}
 }
 
-func getAvailableReplicas(c *client.Client, service string) uint64 {
+func getAvailableReplicas(c *client.Client, service string) (uint64, error) {
 
 	taskFilter := filters.NewArgs()
 	taskFilter.Add("_up-to-date", "true")
 	taskFilter.Add("service", service)
 	taskFilter.Add("desired-state", "running")
+
 	tasks, err := c.TaskList(context.Background(), types.TaskListOptions{Filters: taskFilter})
 	if err != nil {
-		log.Printf("getAvailableReplicas for %s failed %v", service, err)
-		return 0
+		return 0, fmt.Errorf("getAvailableReplicas for: %s failed %s", service, err.Error())
 	}
+
 	replicas := uint64(0)
 	for _, task := range tasks {
 		if task.Status.State == swarm.TaskStateRunning {
@@ -71,5 +79,5 @@ func getAvailableReplicas(c *client.Client, service string) uint64 {
 		}
 	}
 
-	return replicas
+	return replicas, nil
 }

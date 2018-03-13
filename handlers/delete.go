@@ -39,7 +39,7 @@ func DeleteHandler(c *client.Client) http.HandlerFunc {
 
 		services, err := c.ServiceList(context.Background(), options)
 		if err != nil {
-			fmt.Println(err)
+			log.Printf("Error listing services: %s\n", err)
 		}
 
 		// TODO: Filter only "faas" functions (via metadata?)
@@ -52,7 +52,6 @@ func DeleteHandler(c *client.Client) http.HandlerFunc {
 			}
 		}
 
-		log.Println(len(serviceIDs))
 		if len(serviceIDs) == 0 {
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte(fmt.Sprintf("No such service found: %s.", req.FunctionName)))

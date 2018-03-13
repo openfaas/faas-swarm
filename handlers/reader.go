@@ -22,6 +22,8 @@ func FunctionReader(wildcard bool, c client.ServiceAPIClient) http.HandlerFunc {
 
 		functions, err := readServices(c)
 		if err != nil {
+			log.Printf("Error getting service list: %s\n", err.Error())
+
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
 			return
@@ -31,7 +33,6 @@ func FunctionReader(wildcard bool, c client.ServiceAPIClient) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(functionBytes)
-
 	}
 }
 
@@ -45,8 +46,6 @@ func readServices(c client.ServiceAPIClient) ([]requests.Function, error) {
 
 	services, err := c.ServiceList(context.Background(), options)
 	if err != nil {
-		log.Printf("Error getting service list: %s", err.Error())
-
 		return functions, fmt.Errorf("error getting service list: %s", err.Error())
 	}
 

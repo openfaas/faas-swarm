@@ -43,6 +43,26 @@ func TestRead_EmptyTimeoutConfig(t *testing.T) {
 		t.Logf("WriteTimeout want: %s, got %s", defaultVal.String(), config.ReadTimeout.String())
 		t.Fail()
 	}
+
+	if (config.TCPPort) != 8080 {
+		t.Logf("TCPPort want: %d, got %d", 8080, config.TCPPort)
+		t.Fail()
+	}
+}
+
+func TestRead_TCPPortOverrideConfig(t *testing.T) {
+	defaults := NewEnvBucket()
+	defaults.Setenv("port", "8081")
+	readConfig := types.ReadConfig{}
+
+	config := readConfig.Read(defaults)
+
+	expected := 8081
+
+	if (config.TCPPort) != expected {
+		t.Logf("TCPPort want: %d, got %d", expected, config.TCPPort)
+		t.Fail()
+	}
 }
 
 func TestRead_ReadAndWriteIntegerTimeoutConfig(t *testing.T) {
