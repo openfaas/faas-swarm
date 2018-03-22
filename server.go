@@ -14,6 +14,7 @@ import (
 	bootTypes "github.com/openfaas/faas-provider/types"
 	"github.com/openfaas/faas-swarm/handlers"
 	"github.com/openfaas/faas-swarm/types"
+	"github.com/openfaas/faas-swarm/version"
 )
 
 func main() {
@@ -52,6 +53,7 @@ func main() {
 		ReplicaUpdater: handlers.ReplicaUpdater(dockerClient),
 		UpdateHandler:  handlers.UpdateHandler(dockerClient, maxRestarts, restartDelay),
 		Health:         handlers.Health(),
+		InfoHandler:    handlers.MakeInfoHandler(version.BuildVersion(), version.GitCommit),
 	}
 
 	bootstrapConfig := bootTypes.FaaSConfig{
