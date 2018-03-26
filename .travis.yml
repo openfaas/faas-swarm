@@ -17,7 +17,10 @@ after_success:
     - if [ -z $DOCKER_NS ] ; then
         export DOCKER_NS=functions;
         fi
-    - if [ ! -s "$TRAVIS_TAG" ] ; then 
+    - if [ ! -z "$TRAVIS_TAG" ] ; then 
+
+	echo "Travis tag: $TRAVIS_TAG"
+
         docker tag $DOCKER_NS/faas-swarm:latest-dev $DOCKER_NS/faas-swarm:$TRAVIS_TAG;
         docker login -u=$DOCKER_USERNAME -p=$DOCKER_PASSWORD;
         docker push $DOCKER_NS/faas-swarm:$TRAVIS_TAG;
