@@ -232,8 +232,17 @@ func userPasswordFromBasicAuth(basicAuthB64 string) (string, string, error) {
 	return cs[:s], cs[s+1:], nil
 }
 
-func ParseMemory(value string) (int64, error) {
+func parseMemory(value string) (int64, error) {
 	return units.RAMInBytes(value)
+}
+
+func parseCPU(value string) (int64, error) {
+	v, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return v, nil
 }
 
 func buildResources(request *requests.CreateFunctionRequest) *swarm.ResourceRequirements {
@@ -242,28 +251,65 @@ func buildResources(request *requests.CreateFunctionRequest) *swarm.ResourceRequ
 	if request.Requests != nil || request.Limits != nil {
 
 		resources = &swarm.ResourceRequirements{}
+
 		if request.Limits != nil {
-			memoryBytes, err := ParseMemory(request.Limits.Memory)
-			if err != nil {
-				log.Printf("Error parsing memory limit: %T", err)
+			limits := &swarm.Resources{}
+			valueSet := false
+
+			if len(request.Limits.Memory) > 0 {
+				memoryBytes, err := parseMemory(request.Limits.Memory)
+				if err != nil {
+					log.Printf("Error parsing memory limit: %T", err)
+				} else {
+					limits.MemoryBytes = memoryBytes
+					valueSet = true
+				}
 			}
 
-			resources.Limits = &swarm.Resources{
-				MemoryBytes: memoryBytes,
+			if len(request.Limits.CPU) > 0 {
+				nanoCPUs, err := parseCPU(request.Limits.CPU)
+				if err != nil {
+					log.Printf("Error parsing cpu limit: %T", err)
+				} else {
+					limits.NanoCPUs = nanoCPUs
+					valueSet = true
+				}
+			}
+
+			if valueSet {
+				resources.Limits = limits
 			}
 		}
 
 		if request.Requests != nil {
-			memoryBytes, err := ParseMemory(request.Requests.Memory)
-			if err != nil {
-				log.Printf("Error parsing memory request: %T", err)
+			reservations := &swarm.Resources{}
+			valueSet := false
+
+			if len(request.Requests.Memory) > 0 {
+				memoryBytes, err := parseMemory(request.Requests.Memory)
+				if err != nil {
+					log.Printf("Error parsing memory reservations: %T", err)
+				} else {
+					reservations.MemoryBytes = memoryBytes
+					valueSet = true
+				}
 			}
 
-			resources.Reservations = &swarm.Resources{
-				MemoryBytes: memoryBytes,
+			if len(request.Requests.CPU) > 0 {
+				nanoCPUs, err := parseCPU(request.Requests.CPU)
+				if err != nil {
+					log.Printf("Error parsing cpu reservations: %T", err)
+				} else {
+					reservations.NanoCPUs = nanoCPUs
+					valueSet = true
+				}
 			}
 
+			if valueSet {
+				resources.Reservations = reservations
+			}
 		}
+
 	}
 	return resources
 }
