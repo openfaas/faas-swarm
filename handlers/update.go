@@ -79,7 +79,10 @@ func UpdateHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 			updateOpts.EncodedRegistryAuth = auth
 		}
 
+		service.Spec.UpdateConfig.Order = "start-first"
+
 		response, err := c.ServiceUpdate(ctx, service.ID, service.Version, service.Spec, updateOpts)
+
 		if err != nil {
 			log.Println("Error updating service:", err)
 			w.WriteHeader(http.StatusBadRequest)
