@@ -19,10 +19,10 @@ after_success:
         fi
     - if [ ! -z "$TRAVIS_TAG" ] ; then 
 
-	echo "Travis tag: $TRAVIS_TAG"
+        echo "Travis tag: $TRAVIS_TAG"
 
         docker tag $DOCKER_NS/faas-swarm:latest-dev $DOCKER_NS/faas-swarm:$TRAVIS_TAG;
-        docker login -u=$DOCKER_USERNAME -p=$DOCKER_PASSWORD;
+        echo $DOCKER_PASSWORD | docker login -u=$DOCKER_USERNAME --password-stdin;
         docker push $DOCKER_NS/faas-swarm:$TRAVIS_TAG;
 
         docker tag $DOCKER_NS/faas-swarm:latest-dev quay.io/$DOCKER_NS/faas-swarm:$TRAVIS_TAG;
