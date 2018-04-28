@@ -16,12 +16,19 @@ import (
 func TestBuildEncodedAuthConfig(t *testing.T) {
 	// custom repository with valid data
 	testValidEncodedAuthConfig(t, "user", "password", "my.repository.com/user/imagename", "my.repository.com")
+	testValidEncodedAuthConfig(t, "user", "password", "my.repository.com/user/imagename:v0.1", "my.repository.com")
+	testValidEncodedAuthConfig(t, "user", "password", "my.repository.com/user/imagename:latest", "my.repository.com")
 	testValidEncodedAuthConfig(t, "user", "weird:password:", "my.repository.com/user/imagename", "my.repository.com")
 	testValidEncodedAuthConfig(t, "userWithNoPassword", "", "my.repository.com/user/imagename", "my.repository.com")
 	testValidEncodedAuthConfig(t, "", "", "my.repository.com/user/imagename", "my.repository.com")
 
 	// docker hub default repository
+	testValidEncodedAuthConfig(t, "user", "password", "user/imagename", "docker.io")
+	testValidEncodedAuthConfig(t, "user", "password", "user/imagename:v0.1", "docker.io")
+	testValidEncodedAuthConfig(t, "user", "password", "user/imagename:latest", "docker.io")
 	testValidEncodedAuthConfig(t, "user", "password", "docker.io/user/imagename", "docker.io")
+	testValidEncodedAuthConfig(t, "user", "password", "docker.io/user/imagename:v0.1", "docker.io")
+	testValidEncodedAuthConfig(t, "user", "password", "docker.io/user/imagename:latest", "docker.io")
 	testValidEncodedAuthConfig(t, "", "", "docker.io/user/imagename", "docker.io")
 
 	// invalid base64 basic auth
@@ -47,7 +54,7 @@ func testValidEncodedAuthConfig(t *testing.T, user, password, imageName, expecte
 	}
 
 	if user != authConfig.Username {
-		t.Log("Auth config username mismatch", user, authConfig.Username)
+		t.Logf("Auth config username mismatch want %s, got: %s", user, authConfig.Username)
 		t.Fail()
 	}
 

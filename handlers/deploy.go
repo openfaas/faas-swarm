@@ -187,11 +187,15 @@ func buildEnv(envProcess string, envVars map[string]string) []string {
 	return env
 }
 
-// BuildEncodedAuthConfig for private registry
+// BuildEncodedAuthConfig parses the image name for a repository, user name, and image name
+// If a repository is not included (ie: username/function-name), 'docker.io/' will be prepended
 func BuildEncodedAuthConfig(basicAuthB64 string, dockerImage string) (string, error) {
-	// extract registry server address
+	// use docker.io if no repository was included
+	if len(strings.Split(dockerImage, "/")) < 3 {
+		dockerImage = registry.DefaultNamespace + "/" + dockerImage
+	}
 
-	distributionRef, err := reference.WithName(dockerImage)
+	distributionRef, err := reference.ParseNamed(dockerImage)
 	if err != nil {
 		return "", err
 	}
