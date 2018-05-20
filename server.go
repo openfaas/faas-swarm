@@ -60,6 +60,7 @@ func main() {
 		ReadTimeout:  cfg.ReadTimeout,
 		WriteTimeout: cfg.WriteTimeout,
 		TCPPort:      &cfg.TCPPort,
+		EnableHealth: true,
 	}
 
 	bootstrap.Serve(&bootstrapHandlers, &bootstrapConfig)
