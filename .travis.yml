@@ -24,7 +24,7 @@ after_success:
         docker push $DOCKER_NS/faas-swarm:$TRAVIS_TAG;
 
         docker tag $DOCKER_NS/faas-swarm:latest-dev quay.io/$DOCKER_NS/faas-swarm:$TRAVIS_TAG;
-        echo $QUAY_PASSWORD | docker login quay.io -u=$QUAY_USERNAME --password-stdin quay.io;
+        echo $QUAY_PASSWORD | docker login -u=$QUAY_USERNAME --password-stdin quay.io;
         docker push quay.io/$DOCKER_NS/faas-swarm:$TRAVIS_TAG;
 
         fi
