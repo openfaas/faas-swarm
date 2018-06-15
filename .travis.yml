@@ -19,8 +19,6 @@ after_success:
         fi
     - if [ ! -z "$TRAVIS_TAG" ] ; then 
 
-        echo "Travis tag: $TRAVIS_TAG"
-
         docker tag $DOCKER_NS/faas-swarm:latest-dev $DOCKER_NS/faas-swarm:$TRAVIS_TAG;
         echo $DOCKER_PASSWORD | docker login -u=$DOCKER_USERNAME --password-stdin;
         docker push $DOCKER_NS/faas-swarm:$TRAVIS_TAG;
@@ -30,3 +28,4 @@ after_success:
         docker push quay.io/$DOCKER_NS/faas-swarm:$TRAVIS_TAG;
 
         fi
+        
