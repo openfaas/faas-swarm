@@ -26,7 +26,7 @@ Features:
 * [x] List
 * [x] Scale
 
-Docker image: [`functions/faas-swarm`](https://hub.docker.com/r/functions/faas-swarm/tags/)
+Docker image: [`openfaas/faas-swarm`](https://hub.docker.com/r/openfaas/faas-swarm/tags/)
 
 ## Contributing
 
