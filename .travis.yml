@@ -15,7 +15,7 @@ script:
 
 after_success:
     - if [ -z $DOCKER_NS ] ; then
-        export DOCKER_NS=functions;
+        export DOCKER_NS=openfaas;
         fi
     - if [ ! -z "$TRAVIS_TAG" ] ; then 
 
