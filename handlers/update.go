@@ -128,6 +128,7 @@ func updateSpec(request *requests.CreateFunctionRequest, spec *swarm.ServiceSpec
 	}
 
 	spec.TaskTemplate.ContainerSpec.Secrets = secrets
+	spec.TaskTemplate.ContainerSpec.ReadOnly = request.ReadOnlyRootFilesystem
 
 	spec.TaskTemplate.Resources = buildResources(request)
 

@@ -45,8 +45,10 @@ func makeSecretsArray(c *client.Client, secretNames []string) ([]*swarm.SecretRe
 
 	// create map of matching secrets for easy lookup
 	foundSecrets := make(map[string]string)
+	foundSecretNames := []string{}
 	for _, secret := range secrets {
 		foundSecrets[secret.Spec.Annotations.Name] = secret.ID
+		foundSecretNames = append(foundSecretNames, secret.Spec.Annotations.Name)
 	}
 
 	// mimics the simple syntax for `docker service create --secret foo`
@@ -60,7 +62,7 @@ func makeSecretsArray(c *client.Client, secretNames []string) ([]*swarm.SecretRe
 
 		id, ok := foundSecrets[secretName]
 		if !ok {
-			return nil, fmt.Errorf("secret not found: %s; possible choices:\n%s", secretName, secrets)
+			return nil, fmt.Errorf("secret not found: %s; possible choices:\n%v", secretName, foundSecretNames)
 		}
 
 		options := new(swarm.SecretReference)

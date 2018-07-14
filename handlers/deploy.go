@@ -147,9 +147,10 @@ func makeSpec(request *requests.CreateFunctionRequest, maxRestarts uint64, resta
 				Delay:       &restartDelay,
 			},
 			ContainerSpec: &swarm.ContainerSpec{
-				Image:   request.Image,
-				Labels:  labels,
-				Secrets: secrets,
+				Image:    request.Image,
+				Labels:   labels,
+				Secrets:  secrets,
+				ReadOnly: request.ReadOnlyRootFilesystem,
 			},
 			Networks:  nets,
 			Resources: resources,

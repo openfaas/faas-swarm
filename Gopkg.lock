@@ -132,8 +132,8 @@
 [[projects]]
   name = "github.com/openfaas/faas"
   packages = ["gateway/requests"]
-  revision = "76526b0be3eb2fb71f2fcb115870e7623bc54969"
-  version = "0.7.4"
+  revision = "31810a4cf29a3f583c8d69b54c1eab038549ce6a"
+  version = "0.8.6"
 
 [[projects]]
   name = "github.com/openfaas/faas-provider"
@@ -184,6 +184,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "98c6d4cb42aadad9ed299f56438cc8eaa3d3ed32216468b490d3e4faface3bd1"
+  inputs-digest = "59ef8fe2d880e85b9a62c67b746b9ca6a65483c431639fb34d9e5d65eb657e89"
   solver-name = "gps-cdcl"
   solver-version = 1
