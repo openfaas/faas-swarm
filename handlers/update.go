@@ -10,6 +10,7 @@ import (
 	"time"
 
 	types "github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 
@@ -130,6 +131,16 @@ func updateSpec(request *requests.CreateFunctionRequest, spec *swarm.ServiceSpec
 	spec.TaskTemplate.ContainerSpec.Secrets = secrets
 	spec.TaskTemplate.ContainerSpec.ReadOnly = request.ReadOnlyRootFilesystem
 
+	spec.TaskTemplate.ContainerSpec.Mounts = removeMounts(spec.TaskTemplate.ContainerSpec.Mounts, "/tmp")
+	if request.ReadOnlyRootFilesystem {
+		spec.TaskTemplate.ContainerSpec.Mounts = []mount.Mount{
+			{
+				Type:   mount.TypeTmpfs,
+				Target: "/tmp",
+			},
+		}
+	}
+
 	spec.TaskTemplate.Resources = buildResources(request)
 
 	spec.TaskTemplate.Placement = &swarm.Placement{
@@ -156,4 +167,22 @@ func updateSpec(request *requests.CreateFunctionRequest, spec *swarm.ServiceSpec
 	if spec.Mode.Replicated != nil {
 		spec.Mode.Replicated.Replicas = getMinReplicas(request)
 	}
+}
+
+// removeMounts returns a mount.Mount slice with any mounts matching target removed
+// Uses the filter without allocation technique as described here
+// https://github.com/golang/go/wiki/SliceTricks#filtering-without-allocating
+func removeMounts(mounts []mount.Mount, target string) []mount.Mount {
+	if mounts == nil {
+		return nil
+	}
+
+	newMounts := mounts[:0]
+	for _, v := range mounts {
+		if v.Target != target {
+			newMounts = append(newMounts, v)
+		}
+	}
+
+	return newMounts
 }

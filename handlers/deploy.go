@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/docker/docker/api/types/mount"
+
 	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -163,6 +165,15 @@ func makeSpec(request *requests.CreateFunctionRequest, maxRestarts uint64, resta
 				Replicas: getMinReplicas(request),
 			},
 		},
+	}
+
+	if request.ReadOnlyRootFilesystem {
+		spec.TaskTemplate.ContainerSpec.Mounts = []mount.Mount{
+			{
+				Type:   mount.TypeTmpfs,
+				Target: "/tmp",
+			},
+		}
 	}
 
 	// TODO: request.EnvProcess should only be set if it's not nil, otherwise we override anything in the Docker image already
