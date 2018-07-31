@@ -26,6 +26,8 @@ import (
 	"github.com/openfaas/faas/gateway/requests"
 )
 
+const annotationLabelPrefix = "com.openfaas.annotations."
+
 var linuxOnlyConstraints = []string{"node.platform.os == linux"}
 
 // DeployHandler creates a new function (service) inside the swarm network.
@@ -72,7 +74,15 @@ func DeployHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 			}
 		}
 
-		spec := makeSpec(&request, maxRestarts, restartDelay, secrets)
+		spec, err := makeSpec(&request, maxRestarts, restartDelay, secrets)
+		if err != nil {
+
+			log.Printf("Error creating specification: %s\n", err)
+
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Deployment error: " + err.Error()))
+			return
+		}
 
 		response, err := c.ServiceCreate(context.Background(), spec, options)
 		if err != nil {
@@ -109,7 +119,7 @@ func lookupNetwork(c *client.Client) (string, error) {
 	return "", nil
 }
 
-func makeSpec(request *requests.CreateFunctionRequest, maxRestarts uint64, restartDelay time.Duration, secrets []*swarm.SecretReference) swarm.ServiceSpec {
+func makeSpec(request *requests.CreateFunctionRequest, maxRestarts uint64, restartDelay time.Duration, secrets []*swarm.SecretReference) (swarm.ServiceSpec, error) {
 	constraints := []string{}
 
 	if request.Constraints != nil && len(request.Constraints) > 0 {
@@ -118,15 +128,10 @@ func makeSpec(request *requests.CreateFunctionRequest, maxRestarts uint64, resta
 		constraints = linuxOnlyConstraints
 	}
 
-	labels := map[string]string{
-		"com.openfaas.function": request.Service,
-		"function":              "true", // backwards-compatible
-	}
-
-	if request.Labels != nil {
-		for k, v := range *request.Labels {
-			labels[k] = v
-		}
+	labels, err := buildLabels(request)
+	if err != nil {
+		nilSpec := swarm.ServiceSpec{}
+		return nilSpec, err
 	}
 
 	resources := buildResources(request)
@@ -183,7 +188,7 @@ func makeSpec(request *requests.CreateFunctionRequest, maxRestarts uint64, resta
 		spec.TaskTemplate.ContainerSpec.Env = env
 	}
 
-	return spec
+	return spec, nil
 }
 
 func buildEnv(envProcess string, envVars map[string]string) []string {
@@ -342,4 +347,30 @@ func getMinReplicas(request *requests.CreateFunctionRequest) *uint64 {
 		}
 	}
 	return &replicas
+}
+
+func buildLabels(request *requests.CreateFunctionRequest) (map[string]string, error) {
+	labels := map[string]string{
+		"com.openfaas.function": request.Service,
+		"function":              "true", // backwards-compatible
+	}
+
+	if request.Labels != nil {
+		for k, v := range *request.Labels {
+			labels[k] = v
+		}
+	}
+
+	if request.Annotations != nil {
+		for k,v := range *request.Annotations {
+			key := fmt.Sprintf("%s%s", annotationLabelPrefix, k)
+			if _, ok := labels[key]; !ok {
+				labels[key] = v
+			} else {
+				return nil, errors.New(fmt.Sprintf("Keys %s can not be used as a labels as is clashes with annotations", k))
+			}
+		}
+	}
+
+	return labels, nil
 }

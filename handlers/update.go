@@ -64,7 +64,12 @@ func UpdateHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 			}
 		}
 
-		updateSpec(&request, &service.Spec, maxRestarts, restartDelay, secrets)
+		if err := updateSpec(&request, &service.Spec, maxRestarts, restartDelay, secrets); err != nil {
+			log.Println("Error updating service spec:", err)
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Update spc error: " + err.Error()))
+			return
+		}
 
 		updateOpts := types.ServiceUpdateOptions{}
 		updateOpts.RegistryAuthFrom = types.RegistryAuthFromSpec
@@ -96,7 +101,7 @@ func UpdateHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 	}
 }
 
-func updateSpec(request *requests.CreateFunctionRequest, spec *swarm.ServiceSpec, maxRestarts uint64, restartDelay time.Duration, secrets []*swarm.SecretReference) {
+func updateSpec(request *requests.CreateFunctionRequest, spec *swarm.ServiceSpec, maxRestarts uint64, restartDelay time.Duration, secrets []*swarm.SecretReference) error {
 
 	constraints := []string{}
 	if request.Constraints != nil && len(request.Constraints) > 0 {
@@ -109,18 +114,15 @@ func updateSpec(request *requests.CreateFunctionRequest, spec *swarm.ServiceSpec
 	spec.TaskTemplate.RestartPolicy.Condition = swarm.RestartPolicyConditionAny
 	spec.TaskTemplate.RestartPolicy.Delay = &restartDelay
 	spec.TaskTemplate.ContainerSpec.Image = request.Image
-	spec.TaskTemplate.ContainerSpec.Labels = map[string]string{
-		"function":              "true",
-		"com.openfaas.function": request.Service,
-		"com.openfaas.uid":      fmt.Sprintf("%d", time.Now().Nanosecond()),
+
+	labels, err := buildLabels(request)
+	if err != nil {
+		return err
 	}
 
-	if request.Labels != nil {
-		for k, v := range *request.Labels {
-			spec.TaskTemplate.ContainerSpec.Labels[k] = v
-			spec.Annotations.Labels[k] = v
-		}
-	}
+	spec.Annotations.Labels = labels
+	spec.TaskTemplate.ContainerSpec.Labels = labels
+	spec.TaskTemplate.ContainerSpec.Labels["com.openfaas.uid"] = fmt.Sprintf("%d", time.Now().Nanosecond())
 
 	spec.TaskTemplate.Networks = []swarm.NetworkAttachmentConfig{
 		{
@@ -167,6 +169,8 @@ func updateSpec(request *requests.CreateFunctionRequest, spec *swarm.ServiceSpec
 	if spec.Mode.Replicated != nil {
 		spec.Mode.Replicated.Replicas = getMinReplicas(request)
 	}
+
+	return nil
 }
 
 // removeMounts returns a mount.Mount slice with any mounts matching target removed

@@ -55,7 +55,7 @@ func readServices(c client.ServiceAPIClient) ([]requests.Function, error) {
 			envProcess := getEnvProcess(service.Spec.TaskTemplate.ContainerSpec.Env)
 
 			// Required (copy by value)
-			labels := service.Spec.Annotations.Labels
+			labels, annotations := buildLabelsAndAnnotations(service.Spec.Labels)
 
 			f := requests.Function{
 				Name:            service.Spec.Name,
@@ -64,6 +64,7 @@ func readServices(c client.ServiceAPIClient) ([]requests.Function, error) {
 				Replicas:        *service.Spec.Mode.Replicated.Replicas,
 				EnvProcess:      envProcess,
 				Labels:          &labels,
+				Annotations:     &annotations,
 			}
 
 			functions = append(functions, f)
@@ -82,4 +83,24 @@ func getEnvProcess(envVars []string) string {
 	}
 
 	return value
+}
+
+func buildLabelsAndAnnotations(dockerLabels map[string]string) (labels map[string]string, annotations map[string]string) {
+	for k, v := range dockerLabels {
+		if strings.HasPrefix(k, annotationLabelPrefix) {
+			if annotations == nil {
+				annotations = make(map[string]string)
+			}
+
+			annotations[k] = v
+		} else {
+			if labels == nil {
+				labels = make(map[string]string)
+			}
+
+			labels[k] = v
+		}
+	}
+
+	return labels, annotations
 }

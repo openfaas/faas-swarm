@@ -3,10 +3,6 @@
   unused-packages = true
 
 [[constraint]]
-  name = "github.com/moby/moby"
-  revision = "4a804016ab8b9fd55a45cff9687a1de12dee5eb7"
-
-[[constraint]]
   name = "github.com/docker/go-units"
   version = "0.3.2"
 
@@ -26,3 +22,7 @@
 [[override]]
   name = "github.com/docker/distribution"
   revision = "edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c"
+
+[[override]]
+  name = "github.com/moby/moby"
+  revision = "4a804016ab8b9fd55a45cff9687a1de12dee5eb7"
