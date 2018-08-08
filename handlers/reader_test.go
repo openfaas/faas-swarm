@@ -57,7 +57,7 @@ func Test_BuildLabelsAndAnnotationsFromServiceSpec_Annotations(t *testing.T) {
 		t.Errorf("want: %d annotation got: %d", 1, len(annotation))
 	}
 
-	if _, ok := annotation[fmt.Sprintf("%scurrent-time", annotationLabelPrefix)]; !ok {
+	if _, ok := annotation["current-time"]; !ok {
 		t.Errorf("want: '%s' entry in annotation map got: key not found", "current-time")
 	}
 }

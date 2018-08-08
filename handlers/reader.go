@@ -92,7 +92,7 @@ func buildLabelsAndAnnotations(dockerLabels map[string]string) (labels map[strin
 				annotations = make(map[string]string)
 			}
 
-			annotations[k] = v
+			annotations[strings.TrimPrefix(k, annotationLabelPrefix)] = v
 		} else {
 			if labels == nil {
 				labels = make(map[string]string)
