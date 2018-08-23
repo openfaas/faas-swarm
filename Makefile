@@ -14,3 +14,10 @@ push:
 	docker push openfaas/faas-swarm:$(TAG)
 
 all: build
+
+ci-armhf-build:
+	docker build --build-arg http_proxy="${http_proxy}" --build-arg https_proxy="${https_proxy}" -t openfaas/faas-swarm:$(TAG)-armhf . -f Dockerfile.armhf
+
+ci-armhf-push:
+	docker push openfaas/faas-swarm:$(TAG)-armhf
+
