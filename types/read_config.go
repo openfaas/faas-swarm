@@ -72,7 +72,7 @@ func (ReadConfig) Read(hasEnv HasEnv) BootstrapConfig {
 	cfg.ReadTimeout = readTimeout
 	cfg.WriteTimeout = writeTimeout
 
-	cfg.EnableBasicAuth = parseBoolValue("basic_auth", false)
+	cfg.EnableBasicAuth = parseBoolValue(hasEnv.Getenv("basic_auth"), false)
 
 	return cfg
 }
