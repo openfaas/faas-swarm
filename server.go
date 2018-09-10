@@ -57,11 +57,15 @@ func main() {
 	}
 
 	bootstrapConfig := bootTypes.FaaSConfig{
-		ReadTimeout:  cfg.ReadTimeout,
-		WriteTimeout: cfg.WriteTimeout,
-		TCPPort:      &cfg.TCPPort,
-		EnableHealth: true,
+		ReadTimeout:     cfg.ReadTimeout,
+		WriteTimeout:    cfg.WriteTimeout,
+		TCPPort:         &cfg.TCPPort,
+		EnableHealth:    true,
+		EnableBasicAuth: true,
+		SecretMountPath: "/run/secrets",
 	}
+
+	log.Printf("Basic authentication: %v\n", bootstrapConfig.EnableBasicAuth)
 
 	bootstrap.Serve(&bootstrapHandlers, &bootstrapConfig)
 }

@@ -13,8 +13,8 @@
 [[projects]]
   name = "github.com/Microsoft/go-winio"
   packages = ["."]
-  revision = "78439966b38d69bf38227fbf57ac8a6fee70f69a"
-  version = "v0.4.5"
+  revision = "97e4973ce50b2ff5f09635a57e2b88a037aae829"
+  version = "v0.4.11"
 
 [[projects]]
   branch = "master"
@@ -23,10 +23,10 @@
   revision = "cd527374f1e5bff4938207604a14f2e38a9cf512"
 
 [[projects]]
-  branch = "master"
   name = "github.com/docker/cli"
   packages = ["opts"]
-  revision = "1a64b1b7998d996aaf212dc8f24c4fd7bf993b9f"
+  revision = "a8186778137d67e22a53daf4bf409d526408b3cb"
+  version = "v18.09.0-ce-tp5"
 
 [[projects]]
   name = "github.com/docker/distribution"
@@ -68,6 +68,7 @@
     "api/types/versions",
     "api/types/volume",
     "client",
+    "errdefs",
     "pkg/ioutils",
     "pkg/jsonmessage",
     "pkg/longpath",
@@ -78,7 +79,7 @@
     "registry",
     "registry/resumable"
   ]
-  revision = "4a804016ab8b9fd55a45cff9687a1de12dee5eb7"
+  revision = "703a04ebc90d6d3a9eba878d1170ce446f088738"
 
 [[projects]]
   name = "github.com/docker/go-connections"
@@ -87,32 +88,32 @@
     "sockets",
     "tlsconfig"
   ]
-  revision = "3ede32e2033de7505e6500d6c868c2b9ed9f169d"
-  version = "v0.3.0"
+  revision = "7395e3f8aa162843a74ed6d48e79627d9792ac55"
+  version = "v0.4.0"
 
 [[projects]]
   name = "github.com/docker/go-units"
   packages = ["."]
-  revision = "0dadbb0345b35ec7ef35e228dabb8de89a65bf52"
-  version = "v0.3.2"
+  revision = "47565b4f722fb6ceae66b95f853feed578a4a51c"
+  version = "v0.3.3"
 
 [[projects]]
   name = "github.com/gogo/protobuf"
   packages = ["proto"]
-  revision = "342cbe0a04158f6dcb03ca0079991a51a4248c02"
-  version = "v0.5"
+  revision = "636bf0302bc95575d69441b25a2603156ffdddf1"
+  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/gorilla/context"
   packages = ["."]
-  revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
-  version = "v1.1"
+  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
+  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/gorilla/mux"
   packages = ["."]
-  revision = "7f08801859139f86dfafd1c296e2cba9a80d292e"
-  version = "v1.6.0"
+  revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
+  version = "v1.6.2"
 
 [[projects]]
   name = "github.com/opencontainers/go-digest"
@@ -132,17 +133,18 @@
 [[projects]]
   name = "github.com/openfaas/faas"
   packages = ["gateway/requests"]
-  revision = "8f0d2d1fd6c5e3c9d2e0a73d6d256c4e232b3737"
-  version = "0.8.9"
+  revision = "91b6c244941c41b4750c9fcc90fc678d196d4619"
+  version = "0.8.12"
 
 [[projects]]
   name = "github.com/openfaas/faas-provider"
   packages = [
     ".",
+    "auth",
     "types"
   ]
-  revision = "ffce01238ccf01b0f4e573fb65b92b285a547a4b"
-  version = "0.6"
+  revision = "845bf7aa58cb08352c5b2501807837e464ab071d"
+  version = "0.7.1"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -153,14 +155,14 @@
 [[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
-  version = "v1.0.4"
+  revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
+  version = "v1.0.6"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "d585fd2cc9195196078f516b69daff6744ef5e84"
+  revision = "0709b304e793a5edb4a2c0145f281ecdc20838a4"
 
 [[projects]]
   branch = "master"
@@ -168,9 +170,10 @@
   packages = [
     "context",
     "context/ctxhttp",
+    "internal/socks",
     "proxy"
   ]
-  revision = "d866cfc389cec985d6fda2859936a575a55a3ab6"
+  revision = "161cd47e91fd58ac17490ef4d742dc98bb4cf60e"
 
 [[projects]]
   branch = "master"
@@ -179,11 +182,11 @@
     "unix",
     "windows"
   ]
-  revision = "83801418e1b59fb1880e363299581ee543af32ca"
+  revision = "d0be0721c37eeb5299f245a996a483160fc36940"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fa9dbdc438ed77fc91a51b9c17df6f48568837e25335c75545ab74ff1b89d43f"
+  inputs-digest = "6ccc51834d1d93c587976f6bd439720bd052fe215b2f8c79e58f49a8fe12c90c"
   solver-name = "gps-cdcl"
   solver-version = 1
