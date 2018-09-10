@@ -61,7 +61,7 @@ func main() {
 		WriteTimeout:    cfg.WriteTimeout,
 		TCPPort:         &cfg.TCPPort,
 		EnableHealth:    true,
-		EnableBasicAuth: true,
+		EnableBasicAuth: cfg.EnableBasicAuth,
 		SecretMountPath: "/run/secrets",
 	}
 

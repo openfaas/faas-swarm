@@ -72,12 +72,15 @@ func (ReadConfig) Read(hasEnv HasEnv) BootstrapConfig {
 	cfg.ReadTimeout = readTimeout
 	cfg.WriteTimeout = writeTimeout
 
+	cfg.EnableBasicAuth = parseBoolValue("basic_auth", false)
+
 	return cfg
 }
 
 // BootstrapConfig for the process.
 type BootstrapConfig struct {
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-	TCPPort      int
+	ReadTimeout     time.Duration
+	WriteTimeout    time.Duration
+	TCPPort         int
+	EnableBasicAuth bool
 }
