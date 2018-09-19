@@ -46,7 +46,11 @@ func FunctionProxy(wildcard bool, client *client.Client) http.HandlerFunc {
 		}
 
 		switch r.Method {
-		case "POST", "GET":
+		case http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+			http.MethodGet:
 
 			xFunctionHeader := r.Header["X-Function"]
 			if len(xFunctionHeader) > 0 {
