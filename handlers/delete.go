@@ -71,7 +71,7 @@ func DeleteHandler(c *client.Client) http.HandlerFunc {
 			log.Println(serviceRemoveErrors)
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
-			w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusAccepted)
 		}
 
 	}

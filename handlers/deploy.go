@@ -97,6 +97,8 @@ func DeployHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 		if len(response.Warnings) > 0 {
 			log.Println(response.Warnings)
 		}
+
+		w.WriteHeader(http.StatusAccepted)
 	}
 }
 
@@ -362,7 +364,7 @@ func buildLabels(request *requests.CreateFunctionRequest) (map[string]string, er
 	}
 
 	if request.Annotations != nil {
-		for k,v := range *request.Annotations {
+		for k, v := range *request.Annotations {
 			key := fmt.Sprintf("%s%s", annotationLabelPrefix, k)
 			if _, ok := labels[key]; !ok {
 				labels[key] = v

@@ -58,6 +58,7 @@ func ReplicaUpdater(c *client.Client) http.HandlerFunc {
 			return
 		}
 
+		w.WriteHeader(http.StatusAccepted)
 	}
 }
 
