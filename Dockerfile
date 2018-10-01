@@ -1,5 +1,4 @@
-# Build stage
-FROM golang:1.9.7 as build
+FROM golang:1.10.4-alpine3.8 as build
 
 RUN mkdir -p /go/src/github.com/openfaas/faas-swarm/
 
@@ -7,7 +6,8 @@ WORKDIR /go/src/github.com/openfaas/faas-swarm
 
 COPY . .
 
-RUN curl -sL https://github.com/alexellis/license-check/releases/download/0.2.2/license-check > /usr/bin/license-check \
+RUN apk add --no-cache curl git \
+    && curl -sL https://github.com/alexellis/license-check/releases/download/0.2.2/license-check > /usr/bin/license-check \
     && chmod +x /usr/bin/license-check
 RUN license-check -path ./ --verbose=false "Alex Ellis" "OpenFaaS Author(s)"
 
@@ -21,7 +21,7 @@ RUN gofmt -l -d $(find . -type f -name '*.go' -not -path "./vendor/*") \
     -a -installsuffix cgo -o faas-swarm .
 
 # Release stage
-FROM alpine:3.7
+FROM alpine:3.8
 
 LABEL org.label-schema.license="MIT" \
       org.label-schema.vcs-url="https://github.com/openfaas/faas-swarm" \
