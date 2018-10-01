@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"testing"
-	"github.com/openfaas/faas/gateway/requests"
 	"fmt"
+	"github.com/openfaas/faas/gateway/requests"
+	"testing"
 )
 
-func Test_BuildLabels_Defaults(t *testing.T)  {
-	request := &requests.CreateFunctionRequest {}
+func Test_BuildLabels_Defaults(t *testing.T) {
+	request := &requests.CreateFunctionRequest{}
 	val, err := buildLabels(request)
 
 	if err != nil {
@@ -28,8 +28,8 @@ func Test_BuildLabels_Defaults(t *testing.T)  {
 }
 
 func Test_BuildLabels_WithAnnotations(t *testing.T) {
-	request := &requests.CreateFunctionRequest {
-		Labels : &map[string]string{"function_name": "echo"},
+	request := &requests.CreateFunctionRequest{
+		Labels:      &map[string]string{"function_name": "echo"},
 		Annotations: &map[string]string{"current-time": "Wed 25 Jul 06:41:43 BST 2018"},
 	}
 
@@ -49,8 +49,8 @@ func Test_BuildLabels_WithAnnotations(t *testing.T) {
 }
 
 func Test_BuildLabels_NoAnnotations(t *testing.T) {
-	request := &requests.CreateFunctionRequest {
-		Labels : &map[string]string{"function_name": "echo"},
+	request := &requests.CreateFunctionRequest{
+		Labels: &map[string]string{"function_name": "echo"},
 	}
 
 	val, err := buildLabels(request)
@@ -70,8 +70,8 @@ func Test_BuildLabels_NoAnnotations(t *testing.T) {
 
 func Test_BuildLabels_KeyClash(t *testing.T) {
 	request := &requests.CreateFunctionRequest{
-		Labels: & map[string]string{
-			"function_name": "echo",
+		Labels: &map[string]string{
+			"function_name":                                      "echo",
 			fmt.Sprintf("%scurrent-time", annotationLabelPrefix): "foo",
 		},
 		Annotations: &map[string]string{"current-time": "Wed 25 Jul 06:41:43 BST 2018"},

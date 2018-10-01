@@ -115,7 +115,7 @@ func TestReaderSuccessReturnsCorrectBodyWithOneFunction(t *testing.T) {
 	}
 
 	services := []swarm.Service{
-		swarm.Service{
+		{
 			Spec: swarm.ServiceSpec{
 				Mode: swarm.ServiceMode{
 					Replicated: &swarm.ReplicatedService{
@@ -149,7 +149,7 @@ func TestReaderSuccessReturnsCorrectBodyWithOneFunction(t *testing.T) {
 	handler.ServeHTTP(w, r)
 
 	functions := []requests.Function{
-		requests.Function{
+		{
 			Name:            "bar",
 			Image:           "foo/bar:latest",
 			InvocationCount: 0,
