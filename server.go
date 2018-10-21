@@ -8,6 +8,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/openfaas/faas-provider/proxy"
+
 	"github.com/docker/docker/client"
 
 	"github.com/openfaas/faas-provider"
@@ -45,10 +47,10 @@ func main() {
 	log.Printf("HTTP Write Timeout: %s\n", cfg.WriteTimeout)
 
 	bootstrapHandlers := bootTypes.FaaSHandlers{
-		FunctionProxy:  handlers.FunctionProxy(true, dockerClient),
 		DeleteHandler:  handlers.DeleteHandler(dockerClient),
 		DeployHandler:  handlers.DeployHandler(dockerClient, maxRestarts, restartDelay),
 		FunctionReader: handlers.FunctionReader(true, dockerClient),
+		FunctionProxy:  proxy.NewHandlerFunc(cfg.ReadTimeout, handlers.NewFunctionLookup(dockerClient, cfg.DNSrr)),
 		ReplicaReader:  handlers.ReplicaReader(dockerClient),
 		ReplicaUpdater: handlers.ReplicaUpdater(dockerClient),
 		UpdateHandler:  handlers.UpdateHandler(dockerClient, maxRestarts, restartDelay),

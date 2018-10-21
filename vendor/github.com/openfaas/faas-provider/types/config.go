@@ -9,9 +9,11 @@ import (
 type FaaSHandlers struct {
 	FunctionReader http.HandlerFunc
 	DeployHandler  http.HandlerFunc
+	// FunctionProxy provides the function invocation proxy logic.  Use proxy.NewHandlerFunc to
+	// use the standard OpenFaaS proxy implementation or provide completely custom proxy logic.
+	FunctionProxy  http.HandlerFunc
 	DeleteHandler  http.HandlerFunc
 	ReplicaReader  http.HandlerFunc
-	FunctionProxy  http.HandlerFunc
 	ReplicaUpdater http.HandlerFunc
 
 	// Optional: Update an existing function

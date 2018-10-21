@@ -53,10 +53,14 @@ func parseIntOrDurationValue(val string, fallback time.Duration) time.Duration {
 }
 
 func parseBoolValue(val string, fallback bool) bool {
-	if len(val) > 0 {
-		return val == "true"
+	switch val {
+	case "1", "t", "T", "true", "TRUE", "True":
+		return true
+	case "0", "f", "F", "false", "FALSE", "False":
+		return false
+	default:
+		return fallback
 	}
-	return fallback
 }
 
 // Read fetches config from environmental variables.
@@ -73,6 +77,7 @@ func (ReadConfig) Read(hasEnv HasEnv) BootstrapConfig {
 	cfg.WriteTimeout = writeTimeout
 
 	cfg.EnableBasicAuth = parseBoolValue(hasEnv.Getenv("basic_auth"), false)
+	cfg.DNSrr = parseBoolValue(hasEnv.Getenv("dnsrr"), false)
 
 	return cfg
 }
@@ -83,4 +88,5 @@ type BootstrapConfig struct {
 	WriteTimeout    time.Duration
 	TCPPort         int
 	EnableBasicAuth bool
+	DNSrr           bool
 }

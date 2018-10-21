@@ -60,6 +60,7 @@ func Serve(handlers *types.FaaSHandlers, config *types.FaaSConfig) {
 	// Open endpoints
 	r.HandleFunc("/function/{name:[-a-zA-Z_0-9]+}", handlers.FunctionProxy)
 	r.HandleFunc("/function/{name:[-a-zA-Z_0-9]+}/", handlers.FunctionProxy)
+	r.HandleFunc("/function/{name:[-a-zA-Z_0-9]+}/{params:.*}", handlers.FunctionProxy)
 
 	if config.EnableHealth {
 		r.HandleFunc("/healthz", handlers.Health).Methods("GET")

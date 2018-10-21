@@ -1,201 +1,100 @@
 package handlers
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"log"
 	"math/rand"
 	"net"
-	"net/http"
-	"os"
-	"strconv"
+	"net/url"
 	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
-	"github.com/gorilla/mux"
-
-	"github.com/openfaas/faas/gateway/requests"
+	"github.com/docker/docker/api/types/swarm"
 )
 
 const watchdogPort = 8080
+const urlScheme = "http"
 
-//FunctionProxy passes-through to functions
-func FunctionProxy(wildcard bool, client *client.Client) http.HandlerFunc {
+// ServiceLister is the subset of the Docker client.ServiceAPIClient needed to enable the
+// function lookup
+type ServiceLister interface {
+	ServiceList(context.Context, types.ServiceListOptions) ([]swarm.Service, error)
+}
 
-	proxyClient := http.Client{
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{
-				Timeout:   3 * time.Second,
-				KeepAlive: 0,
-			}).DialContext,
-			MaxIdleConns:          1,
-			DisableKeepAlives:     true,
-			IdleConnTimeout:       120 * time.Millisecond,
-			ExpectContinueTimeout: 1500 * time.Millisecond,
-		},
-	}
+// FunctionLookup is a openfaas-provider proxy.BaseURLResolver that allows the
+// caller to verify that a function is resolvable.
+type FunctionLookup struct {
+	docker      ServiceLister
+	dnsrr       bool
+	scheme      string
+	dnsrrLookup func(string) ([]net.IP, error)
+}
 
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Body != nil {
-			defer r.Body.Close()
-		}
-
-		switch r.Method {
-		case http.MethodPost,
-			http.MethodPut,
-			http.MethodPatch,
-			http.MethodDelete,
-			http.MethodGet:
-
-			xFunctionHeader := r.Header["X-Function"]
-			if len(xFunctionHeader) > 0 {
-				log.Print("X-Function: ", xFunctionHeader)
-			}
-
-			// getServiceName
-			var serviceName string
-			if wildcard {
-				muxVars := mux.Vars(r)
-
-				name := muxVars["name"]
-				serviceName = name
-			} else if len(xFunctionHeader) > 0 {
-				serviceName = xFunctionHeader[0]
-			}
-
-			if len(serviceName) > 0 {
-				lookupInvoke(w, r, serviceName, client, &proxyClient)
-			} else {
-				w.WriteHeader(http.StatusBadRequest)
-				w.Write([]byte("Provide an x-function header or valid route /function/function_name."))
-			}
-			break
-		default:
-			w.WriteHeader(http.StatusMethodNotAllowed)
-		}
+// NewFunctionLookup instantiates a new FunctionLookup resolver
+func NewFunctionLookup(client ServiceLister, dnsrr bool) *FunctionLookup {
+	return &FunctionLookup{
+		docker:      client,
+		dnsrr:       dnsrr,
+		scheme:      urlScheme,
+		dnsrrLookup: net.LookupIP,
 	}
 }
 
-func lookupInvoke(w http.ResponseWriter, r *http.Request, name string, c *client.Client, proxyClient *http.Client) {
-	exists, err := lookupSwarmService(name, c)
+// Resolve implements the openfaas-provider proxy.BaseURLResolver interface. In
+// short it verifies that a function with the given name is resolvable by Docker
+// Swarm.  It can be configured to do this via DNS or by querying the Docker Service
+// list.
+func (l *FunctionLookup) Resolve(name string) (u url.URL, err error) {
 
-	if err != nil || exists == false {
-		if err != nil {
-			log.Printf("Could not resolve service: %s error: %s.", name, err)
-		}
-
-		// TODO: Should record the 404/not found error in Prometheus.
-		writeHead(name, http.StatusNotFound, w)
-		w.Write([]byte(fmt.Sprintf("Cannot find service: %s.", name)))
-	}
-
-	if exists {
-		forwardReq := requests.NewForwardRequest(r.Method, *r.URL)
-
-		invokeService(w, r, name, forwardReq, proxyClient)
-	}
-}
-
-func lookupSwarmService(serviceName string, c *client.Client) (bool, error) {
-	// fmt.Printf("Resolving: '%s'\n", serviceName)
-	serviceFilter := filters.NewArgs()
-	serviceFilter.Add("name", serviceName)
-	services, err := c.ServiceList(context.Background(), types.ServiceListOptions{Filters: serviceFilter})
-
-	return len(services) > 0, err
-}
-
-func invokeService(w http.ResponseWriter, r *http.Request, service string, forwardReq requests.ForwardRequest, proxyClient *http.Client) {
-	stamp := strconv.FormatInt(time.Now().Unix(), 10)
-
-	//TODO: inject setting rather than looking up each time.
-	var dnsrr bool
-	if os.Getenv("dnsrr") == "true" {
-		dnsrr = true
-	}
-
-	addr := service
-	// Use DNS-RR via tasks.servicename if enabled as override, otherwise VIP.
-	if dnsrr {
-		entries, lookupErr := net.LookupIP(fmt.Sprintf("tasks.%s", service))
-		if lookupErr == nil && len(entries) > 0 {
-			index := randomInt(0, len(entries))
-			addr = entries[index].String()
-		}
-	}
-
-	url := forwardReq.ToURL(addr, watchdogPort)
-
-	contentType := r.Header.Get("Content-Type")
-	fmt.Printf("[%s] Forwarding request [%s] to: %s\n", stamp, contentType, url)
-
-	if r.Body != nil {
-		defer r.Body.Close()
-	}
-
-	request, err := http.NewRequest(r.Method, url, r.Body)
-
-	copyHeaders(&request.Header, &r.Header)
-
-	response, err := proxyClient.Do(request)
-	if err != nil {
-		log.Printf("Error, can't reach service: %s, %s\n", service, err)
-
-		writeHead(service, http.StatusInternalServerError, w)
-		buf := bytes.NewBufferString("Can't reach service: " + service)
-		w.Write(buf.Bytes())
-		return
-	}
-
-	clientHeader := w.Header()
-	copyHeaders(&clientHeader, &response.Header)
-
-	defaultHeader := "text/plain"
-
-	w.Header().Set("Content-Type", GetContentType(response.Header, r.Header, defaultHeader))
-
-	writeHead(service, response.StatusCode, w)
-
-	if response.Body != nil {
-		io.Copy(w, response.Body)
-	}
-}
-
-// GetContentType resolves the correct Content-Tyoe for a proxied function
-func GetContentType(request http.Header, proxyResponse http.Header, defaultValue string) string {
-	responseHeader := proxyResponse.Get("Content-Type")
-	requestHeader := request.Get("Content-Type")
-
-	var headerContentType string
-	if len(responseHeader) > 0 {
-		headerContentType = responseHeader
-	} else if len(requestHeader) > 0 {
-		headerContentType = requestHeader
+	if l.dnsrr {
+		u.Host, err = l.byDNSRoundRobin(name)
 	} else {
-		headerContentType = defaultValue
+		u.Host, err = l.byName(name)
 	}
 
-	return headerContentType
+	if err != nil {
+		return u, err
+	}
+
+	u.Scheme = l.scheme
+	return u, nil
 }
 
-func copyHeaders(destination *http.Header, source *http.Header) {
-	for k, v := range *source {
-		vClone := make([]string, len(v))
-		copy(vClone, v)
-		(*destination)[k] = vClone
+// resolve the function by checking the available docker VIP based resolution
+func (l *FunctionLookup) byName(name string) (string, error) {
+	serviceFilter := filters.NewArgs()
+	serviceFilter.Add("name", name)
+	services, err := l.docker.ServiceList(context.Background(), types.ServiceListOptions{Filters: serviceFilter})
+
+	if err != nil {
+		return "", err
 	}
+
+	if len(services) > 0 {
+		return name, nil
+	}
+
+	return "", fmt.Errorf("could not resolve: %s", name)
+}
+
+// resolve the function by checking the available docker DNSRR resolution
+func (l *FunctionLookup) byDNSRoundRobin(name string) (string, error) {
+	entries, lookupErr := l.dnsrrLookup(fmt.Sprintf("tasks.%s", name))
+
+	if lookupErr != nil {
+		return "", lookupErr
+	}
+
+	if len(entries) > 0 {
+		index := randomInt(0, len(entries))
+		return entries[index].String(), nil
+	}
+
+	return "", fmt.Errorf("could not resolve '%s' using dnsrr", name)
 }
 
 func randomInt(min, max int) int {
 	rand.Seed(time.Now().Unix())
 	return rand.Intn(max-min) + min
-}
-
-func writeHead(service string, code int, w http.ResponseWriter) {
-	w.WriteHeader(code)
 }
