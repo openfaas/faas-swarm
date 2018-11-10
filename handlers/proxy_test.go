@@ -10,13 +10,13 @@ import (
 	"github.com/docker/docker/api/types/swarm"
 )
 
-type mockServiceLister struct {
+type testServiceLister struct {
 	serviceName string
 	resolverErr bool
 	err         error
 }
 
-func (l mockServiceLister) ServiceList(ctx context.Context, options types.ServiceListOptions) ([]swarm.Service, error) {
+func (l testServiceLister) ServiceList(ctx context.Context, options types.ServiceListOptions) ([]swarm.Service, error) {
 	if l.resolverErr {
 		return nil, l.err
 	}
@@ -43,7 +43,7 @@ func Test_ProxyURLResolver_ByName(t *testing.T) {
 
 	for _, s := range scenarios {
 		t.Run(s.name, func(t *testing.T) {
-			docker := mockServiceLister{s.fncName, s.resolverErr, s.err}
+			docker := testServiceLister{s.fncName, s.resolverErr, s.err}
 			u, err := NewFunctionLookup(docker, false).Resolve("testFnc")
 			if err != nil && err.Error() != s.err.Error() {
 				t.Errorf("expected resolver error `%s`, got `%s`", s.err, err)
@@ -72,7 +72,7 @@ func Test_ProxyURLResolver_RoundRobingErrs(t *testing.T) {
 
 	for _, s := range scenarios {
 		t.Run(s.name, func(t *testing.T) {
-			docker := mockServiceLister{s.fncName, s.resolverErr, s.err}
+			docker := testServiceLister{s.fncName, s.resolverErr, s.err}
 			resolver := NewFunctionLookup(docker, true)
 			resolver.dnsrrLookup = testDNSRRLookup
 
