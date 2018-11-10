@@ -34,7 +34,7 @@ type FunctionLookup struct {
 	dnsrrLookup func(string) ([]net.IP, error)
 }
 
-// NewFunctionLookup instantiates a new FunctionLookup resolver
+// NewFunctionLookup creates a new FunctionLookup resolver
 func NewFunctionLookup(client ServiceLister, dnsrr bool) *FunctionLookup {
 	return &FunctionLookup{
 		docker:      client,
