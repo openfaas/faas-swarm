@@ -54,9 +54,9 @@ func parseIntOrDurationValue(val string, fallback time.Duration) time.Duration {
 
 func parseBoolValue(val string, fallback bool) bool {
 	switch val {
-	case "1", "t", "T", "true", "TRUE", "True":
+	case "1", "true":
 		return true
-	case "0", "f", "F", "false", "FALSE", "False":
+	case "0", "false":
 		return false
 	default:
 		return fallback
