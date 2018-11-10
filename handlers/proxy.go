@@ -25,9 +25,12 @@ type ServiceLister interface {
 // FunctionLookup is a openfaas-provider proxy.BaseURLResolver that allows the
 // caller to verify that a function is resolvable.
 type FunctionLookup struct {
-	docker      ServiceLister
-	dnsrr       bool
-	scheme      string
+	docker ServiceLister
+	// dnsrr controls  if DNSRoundRobin is used to resolve function
+	dnsrr bool
+	// scheme is the http scheme (http/https) used to proxy the request
+	scheme string
+	// dnsrrLookup method used to resolve the function IP address, defaults to net.LookupIP
 	dnsrrLookup func(string) ([]net.IP, error)
 }
 
