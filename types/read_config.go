@@ -77,7 +77,7 @@ func (ReadConfig) Read(hasEnv HasEnv) BootstrapConfig {
 	cfg.WriteTimeout = writeTimeout
 
 	cfg.EnableBasicAuth = parseBoolValue(hasEnv.Getenv("basic_auth"), false)
-	cfg.DNSrr = parseBoolValue(hasEnv.Getenv("dnsrr"), false)
+	cfg.DNSRoundRobin = parseBoolValue(hasEnv.Getenv("dnsrr"), false)
 
 	return cfg
 }
@@ -88,5 +88,12 @@ type BootstrapConfig struct {
 	WriteTimeout    time.Duration
 	TCPPort         int
 	EnableBasicAuth bool
-	DNSrr           bool
+	// DNSRoundRobin controls how faas-swarm will lookup functions when proxying requests.
+	// When
+	//	DNSRoundRobin = true
+	// faas-swarm will look up the function directly from Swarm's DNS via the tasks.functionName
+	// when
+	// 	DNSRoundRObin = false
+	// faas-swarm will attempt to resolve the function by name, validating using the Swarm API
+	DNSRoundRobin bool
 }

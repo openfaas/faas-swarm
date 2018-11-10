@@ -50,7 +50,7 @@ func main() {
 		DeleteHandler:  handlers.DeleteHandler(dockerClient),
 		DeployHandler:  handlers.DeployHandler(dockerClient, maxRestarts, restartDelay),
 		FunctionReader: handlers.FunctionReader(true, dockerClient),
-		FunctionProxy:  proxy.NewHandlerFunc(cfg.ReadTimeout, handlers.NewFunctionLookup(dockerClient, cfg.DNSrr)),
+		FunctionProxy:  proxy.NewHandlerFunc(cfg.ReadTimeout, handlers.NewFunctionLookup(dockerClient, cfg.DNSRoundRobin)),
 		ReplicaReader:  handlers.ReplicaReader(dockerClient),
 		ReplicaUpdater: handlers.ReplicaUpdater(dockerClient),
 		UpdateHandler:  handlers.UpdateHandler(dockerClient, maxRestarts, restartDelay),
