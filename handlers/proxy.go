@@ -25,7 +25,8 @@ type ServiceLister interface {
 // FunctionLookup is a openfaas-provider proxy.BaseURLResolver that allows the
 // caller to verify that a function is resolvable.
 type FunctionLookup struct {
-	docker ServiceLister
+	// lister is ServiceLister client, typically the Docker client
+	lister ServiceLister
 	// dnsRoundRobin controls  if DNSRoundRobin is used to resolve function
 	dnsRoundRobin bool
 	// scheme is the http scheme (http/https) used to proxy the request
@@ -37,7 +38,7 @@ type FunctionLookup struct {
 // NewFunctionLookup creates a new FunctionLookup resolver
 func NewFunctionLookup(client ServiceLister, dnsRoundRobin bool) *FunctionLookup {
 	return &FunctionLookup{
-		docker:        client,
+		lister:        client,
 		dnsRoundRobin: dnsRoundRobin,
 		scheme:        urlScheme,
 		dnsrrLookup:   net.LookupIP,
@@ -68,7 +69,7 @@ func (l *FunctionLookup) Resolve(name string) (u url.URL, err error) {
 func (l *FunctionLookup) byName(name string) (string, error) {
 	serviceFilter := filters.NewArgs()
 	serviceFilter.Add("name", name)
-	services, err := l.docker.ServiceList(context.Background(), types.ServiceListOptions{Filters: serviceFilter})
+	services, err := l.lister.ServiceList(context.Background(), types.ServiceListOptions{Filters: serviceFilter})
 
 	if err != nil {
 		return "", err
