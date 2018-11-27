@@ -46,11 +46,13 @@ func main() {
 	log.Printf("HTTP Read Timeout: %s\n", cfg.ReadTimeout)
 	log.Printf("HTTP Write Timeout: %s\n", cfg.WriteTimeout)
 
+	funcProxyHandler := handlers.NewFunctionLookup(dockerClient, cfg.DNSRoundRobin)
+
 	bootstrapHandlers := bootTypes.FaaSHandlers{
 		DeleteHandler:  handlers.DeleteHandler(dockerClient),
 		DeployHandler:  handlers.DeployHandler(dockerClient, maxRestarts, restartDelay),
 		FunctionReader: handlers.FunctionReader(true, dockerClient),
-		FunctionProxy:  proxy.NewHandlerFunc(cfg.ReadTimeout, handlers.NewFunctionLookup(dockerClient, cfg.DNSRoundRobin)),
+		FunctionProxy:  proxy.NewHandlerFunc(cfg.ReadTimeout, funcProxyHandler),
 		ReplicaReader:  handlers.ReplicaReader(dockerClient),
 		ReplicaUpdater: handlers.ReplicaUpdater(dockerClient),
 		UpdateHandler:  handlers.UpdateHandler(dockerClient, maxRestarts, restartDelay),
