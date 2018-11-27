@@ -26,8 +26,8 @@ type ServiceLister interface {
 // caller to verify that a function is resolvable.
 type FunctionLookup struct {
 	docker ServiceLister
-	// dnsrr controls  if DNSRoundRobin is used to resolve function
-	dnsrr bool
+	// dnsRoundRobin controls  if DNSRoundRobin is used to resolve function
+	dnsRoundRobin bool
 	// scheme is the http scheme (http/https) used to proxy the request
 	scheme string
 	// dnsrrLookup method used to resolve the function IP address, defaults to net.LookupIP
@@ -35,12 +35,12 @@ type FunctionLookup struct {
 }
 
 // NewFunctionLookup creates a new FunctionLookup resolver
-func NewFunctionLookup(client ServiceLister, dnsrr bool) *FunctionLookup {
+func NewFunctionLookup(client ServiceLister, dnsRoundRobin bool) *FunctionLookup {
 	return &FunctionLookup{
-		docker:      client,
-		dnsrr:       dnsrr,
-		scheme:      urlScheme,
-		dnsrrLookup: net.LookupIP,
+		docker:        client,
+		dnsRoundRobin: dnsRoundRobin,
+		scheme:        urlScheme,
+		dnsrrLookup:   net.LookupIP,
 	}
 }
 
@@ -50,7 +50,7 @@ func NewFunctionLookup(client ServiceLister, dnsrr bool) *FunctionLookup {
 // list.
 func (l *FunctionLookup) Resolve(name string) (u url.URL, err error) {
 
-	if l.dnsrr {
+	if l.dnsRoundRobin {
 		u.Host, err = l.byDNSRoundRobin(name)
 	} else {
 		u.Host, err = l.byName(name)
