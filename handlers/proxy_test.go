@@ -88,7 +88,7 @@ func Test_ProxyURLResolver_RoundRobingErrs(t *testing.T) {
 	}
 }
 
-func testDNSRRLookup(name string) ([]net.IP, error) {
+func testDNSRRLookup(ctx context.Context, name string) ([]net.IP, error) {
 	if name == "tasks.dnsrrTestFncDoesNotExist" {
 		return nil, errors.New("lookup tasks.dnsrrTestFncDoesNotExist: no such host")
 	}

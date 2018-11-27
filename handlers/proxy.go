@@ -31,8 +31,9 @@ type FunctionLookup struct {
 	dnsRoundRobin bool
 	// scheme is the http scheme (http/https) used to proxy the request
 	scheme string
-	// dnsrrLookup method used to resolve the function IP address, defaults to net.LookupIP
-	dnsrrLookup func(string) ([]net.IP, error)
+	// dnsrrLookup method used to resolve the function IP address, defaults to the internal lookupIP
+	// method, which is an implementation of net.LookupIP
+	dnsrrLookup func(context.Context, string) ([]net.IP, error)
 }
 
 // NewFunctionLookup creates a new FunctionLookup resolver
@@ -41,7 +42,7 @@ func NewFunctionLookup(client ServiceLister, dnsRoundRobin bool) *FunctionLookup
 		lister:        client,
 		dnsRoundRobin: dnsRoundRobin,
 		scheme:        urlScheme,
-		dnsrrLookup:   net.LookupIP,
+		dnsrrLookup:   lookupIP,
 	}
 }
 
@@ -50,11 +51,17 @@ func NewFunctionLookup(client ServiceLister, dnsRoundRobin bool) *FunctionLookup
 // Swarm.  It can be configured to do this via DNS or by querying the Docker Service
 // list.
 func (l *FunctionLookup) Resolve(name string) (u url.URL, err error) {
+	return l.ResolveContext(context.Background(), name)
+}
+
+// ResolveContext provides an implementation of openfaas-provider proxy.BaseURLResolver with
+// context support. See `Resolve`
+func (l *FunctionLookup) ResolveContext(ctx context.Context, name string) (u url.URL, err error) {
 
 	if l.dnsRoundRobin {
-		u.Host, err = l.byDNSRoundRobin(name)
+		u.Host, err = l.byDNSRoundRobin(ctx, name)
 	} else {
-		u.Host, err = l.byName(name)
+		u.Host, err = l.byName(ctx, name)
 	}
 
 	if err != nil {
@@ -66,10 +73,10 @@ func (l *FunctionLookup) Resolve(name string) (u url.URL, err error) {
 }
 
 // resolve the function by checking the available docker VIP based resolution
-func (l *FunctionLookup) byName(name string) (string, error) {
+func (l *FunctionLookup) byName(ctx context.Context, name string) (string, error) {
 	serviceFilter := filters.NewArgs()
 	serviceFilter.Add("name", name)
-	services, err := l.lister.ServiceList(context.Background(), types.ServiceListOptions{Filters: serviceFilter})
+	services, err := l.lister.ServiceList(ctx, types.ServiceListOptions{Filters: serviceFilter})
 
 	if err != nil {
 		return "", err
@@ -83,8 +90,8 @@ func (l *FunctionLookup) byName(name string) (string, error) {
 }
 
 // resolve the function by checking the available docker DNSRR resolution
-func (l *FunctionLookup) byDNSRoundRobin(name string) (string, error) {
-	entries, lookupErr := l.dnsrrLookup(fmt.Sprintf("tasks.%s", name))
+func (l *FunctionLookup) byDNSRoundRobin(ctx context.Context, name string) (string, error) {
+	entries, lookupErr := l.dnsrrLookup(ctx, fmt.Sprintf("tasks.%s", name))
 
 	if lookupErr != nil {
 		return "", lookupErr
@@ -101,4 +108,18 @@ func (l *FunctionLookup) byDNSRoundRobin(name string) (string, error) {
 func randomInt(min, max int) int {
 	rand.Seed(time.Now().Unix())
 	return rand.Intn(max-min) + min
+}
+
+// lookupIP implements the net.LookupIP method with context support. It returns a slice of that\
+// host's IPv4 and IPv6 addresses.
+func lookupIP(ctx context.Context, host string) ([]net.IP, error) {
+	addrs, err := net.DefaultResolver.LookupIPAddr(ctx, host)
+	if err != nil {
+		return nil, err
+	}
+	ips := make([]net.IP, len(addrs))
+	for i, ia := range addrs {
+		ips[i] = ia.IP
+	}
+	return ips, nil
 }
