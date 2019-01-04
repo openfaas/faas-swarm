@@ -58,6 +58,7 @@ func main() {
 		UpdateHandler:  handlers.UpdateHandler(dockerClient, maxRestarts, restartDelay),
 		Health:         handlers.Health(),
 		InfoHandler:    handlers.MakeInfoHandler(version.BuildVersion(), version.GitCommit),
+		SecretHandler:  handlers.MakeSecretsHandler(dockerClient),
 	}
 
 	bootstrapConfig := bootTypes.FaaSConfig{
