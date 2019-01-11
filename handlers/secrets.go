@@ -134,7 +134,7 @@ func getSecrets(c *client.Client, _ []byte) (responseStatus int, responseBody []
 		)
 	}
 
-	var results []requests.Secret
+	results := []requests.Secret{}
 
 	for _, s := range secrets {
 		results = append(results, requests.Secret{Name: s.Spec.Name, Value: string(s.Spec.Data)})
