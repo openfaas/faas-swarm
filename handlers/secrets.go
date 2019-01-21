@@ -22,7 +22,7 @@ var (
 	ownerLabelValue = "openfaas"
 )
 
-func MakeSecretsHandler(c *client.Client) http.HandlerFunc {
+func MakeSecretsHandler(c client.SecretAPIClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Body != nil {
 			defer r.Body.Close()
@@ -82,7 +82,7 @@ func MakeSecretsHandler(c *client.Client) http.HandlerFunc {
 	}
 }
 
-func getSecretsWithLabel(c *client.Client, labelName string, labelValue string) ([]swarm.Secret, error) {
+func getSecretsWithLabel(c client.SecretAPIClient, labelName string, labelValue string) ([]swarm.Secret, error) {
 	secrets, secretListErr := c.SecretList(context.Background(), types.SecretListOptions{})
 	if secretListErr != nil {
 		return nil, secretListErr
@@ -99,7 +99,7 @@ func getSecretsWithLabel(c *client.Client, labelName string, labelValue string) 
 	return filteredSecrets, nil
 }
 
-func getSecretWithName(c *client.Client, name string) (secret *swarm.Secret, err error, status int) {
+func getSecretWithName(c client.SecretAPIClient, name string) (secret *swarm.Secret, err error, status int) {
 	secrets, secretListErr := c.SecretList(context.Background(), types.SecretListOptions{})
 	if secretListErr != nil {
 		return nil, secretListErr, http.StatusInternalServerError
@@ -123,7 +123,7 @@ func getSecretWithName(c *client.Client, name string) (secret *swarm.Secret, err
 	return nil, fmt.Errorf("not found secret with name: %s", name), http.StatusNotFound
 }
 
-func getSecrets(c *client.Client, _ []byte) (responseStatus int, responseBody []byte, err error) {
+func getSecrets(c client.SecretAPIClient, _ []byte) (responseStatus int, responseBody []byte, err error) {
 	secrets, err := getSecretsWithLabel(c, ownerLabel, ownerLabelValue)
 	if err != nil {
 		return http.StatusInternalServerError, nil, fmt.Errorf(
@@ -151,7 +151,7 @@ func getSecrets(c *client.Client, _ []byte) (responseStatus int, responseBody []
 	return http.StatusOK, resultsJson, nil
 }
 
-func createNewSecret(c *client.Client, body []byte) (responseStatus int, responseBody []byte, err error) {
+func createNewSecret(c client.SecretAPIClient, body []byte) (responseStatus int, responseBody []byte, err error) {
 	var secret requests.Secret
 
 	unmarshalErr := json.Unmarshal(body, &secret)
@@ -181,7 +181,7 @@ func createNewSecret(c *client.Client, body []byte) (responseStatus int, respons
 	return http.StatusCreated, nil, nil
 }
 
-func updateSecret(c *client.Client, body []byte) (responseStatus int, responseBody []byte, err error) {
+func updateSecret(c client.SecretAPIClient, body []byte) (responseStatus int, responseBody []byte, err error) {
 	var secret requests.Secret
 
 	unmarshalErr := json.Unmarshal(body, &secret)
@@ -195,7 +195,7 @@ func updateSecret(c *client.Client, body []byte) (responseStatus int, responseBo
 	foundSecret, getSecretErr, status := getSecretWithName(c, secret.Name)
 	if getSecretErr != nil {
 		return status, nil, fmt.Errorf(
-			"cannot get secret with name: %s, which you want to remove. Error: %s",
+			"cannot get secret with name: %s. Error: %s",
 			secret.Name,
 			getSecretErr.Error(),
 		)
@@ -212,20 +212,18 @@ func updateSecret(c *client.Client, body []byte) (responseStatus int, responseBo
 	})
 
 	if updateSecretErr != nil {
-		fmt.Println("updateSecretErr\n", updateSecretErr.Error())
-
 		return http.StatusInternalServerError, nil, fmt.Errorf(
 			"couldn't update secret (name: %s, ID: %s) because of error: %s",
 			secret.Name,
 			foundSecret.ID,
-			getSecretErr.Error(),
+			updateSecretErr.Error(),
 		)
 	}
 
 	return http.StatusOK, nil,nil
 }
 
-func deleteSecret(c *client.Client, body []byte) (responseStatus int, responseBody []byte, err error) {
+func deleteSecret(c client.SecretAPIClient, body []byte) (responseStatus int, responseBody []byte, err error) {
 	var secret requests.Secret
 
 	unmarshalErr := json.Unmarshal(body, &secret)
