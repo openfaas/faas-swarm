@@ -29,9 +29,12 @@
   revision = "cd527374f1e5bff4938207604a14f2e38a9cf512"
 
 [[projects]]
-  digest = "1:25ad5aafe4948562faae53ddf0db1dd166d4cf489f0ffa6675a42edea4c936a6"
+  digest = "1:d70adc7daf3d1d9c8cd974751b08e4de10f2caffd8507a07c41ac36ed7f2778f"
   name = "github.com/docker/cli"
-  packages = ["opts"]
+  packages = [
+    "opts",
+    "service/logs",
+  ]
   pruneopts = "UT"
   revision = "a8186778137d67e22a53daf4bf409d526408b3cb"
   version = "v18.09.0-ce-tp5"
@@ -170,6 +173,8 @@
   packages = [
     ".",
     "auth",
+    "httputils",
+    "logs",
     "proxy",
     "types",
   ]
@@ -230,6 +235,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/docker/cli/opts",
+    "github.com/docker/cli/service/logs",
     "github.com/docker/distribution/reference",
     "github.com/docker/docker/api/types",
     "github.com/docker/docker/api/types/filters",
@@ -240,6 +246,7 @@
     "github.com/docker/go-units",
     "github.com/gorilla/mux",
     "github.com/openfaas/faas-provider",
+    "github.com/openfaas/faas-provider/logs",
     "github.com/openfaas/faas-provider/proxy",
     "github.com/openfaas/faas-provider/types",
     "github.com/openfaas/faas/gateway/requests",

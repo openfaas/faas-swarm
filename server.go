@@ -8,11 +8,12 @@ import (
 	"log"
 	"time"
 
+	"github.com/openfaas/faas-provider/logs"
 	"github.com/openfaas/faas-provider/proxy"
 
 	"github.com/docker/docker/client"
 
-	"github.com/openfaas/faas-provider"
+	bootstrap "github.com/openfaas/faas-provider"
 	bootTypes "github.com/openfaas/faas-provider/types"
 	"github.com/openfaas/faas-swarm/handlers"
 	"github.com/openfaas/faas-swarm/types"
@@ -59,6 +60,7 @@ func main() {
 		HealthHandler:  handlers.Health(),
 		InfoHandler:    handlers.MakeInfoHandler(version.BuildVersion(), version.GitCommit),
 		SecretHandler:  handlers.MakeSecretsHandler(dockerClient),
+		LogHandler:     logs.NewLogHandlerFunc(handlers.NewLogRequestor(dockerClient)),
 	}
 
 	bootstrapConfig := bootTypes.FaaSConfig{
