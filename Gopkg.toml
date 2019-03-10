@@ -26,3 +26,7 @@
 [[override]]
   name = "github.com/moby/moby"
   revision = "4a804016ab8b9fd55a45cff9687a1de12dee5eb7"
+
+[[constraint]]
+  name = "github.com/gorilla/websocket"
+  version = "1.4.0"

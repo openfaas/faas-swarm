@@ -8,13 +8,6 @@ import (
 )
 
 // Request is the query to return the function logs.
-//
-// Notes:
-// Pattern matching could be implemented in the OF Provider as standardized logic and does not
-// need to be implemented in the specific orchestration provider, since not all providers may be
-// able to support this natively.  Alternatively, we provide a simple server side filter implementation
-// and the interface for the Logs handlers can allow the provider to configure/customize that implementation
-// similar to provider implementing the `resolver` in the proxy handler
 type Request struct {
 	// Name is the function name and is required
 	Name string `json:"name"`
@@ -32,6 +25,16 @@ type Request struct {
 	Invert bool `json:"invert"`
 }
 
+// String implements that Stringer interface and prints the log Request in a consistent way that
+// allows you to safely compare if two requests have the same value.
+func (r Request) String() string {
+	pattern := ""
+	if r.Pattern != nil {
+		pattern = *r.Pattern
+	}
+	return fmt.Sprintf("name:%s instance:%s since:%v limit:%d follow:%v pattern:%v invert:%v", r.Name, r.Instance, r.Since, r.Limit, r.Follow, pattern, r.Invert)
+}
+
 // Message is a specific log message from a function container log stream
 type Message struct {
 	// Name is the function name
@@ -44,6 +47,7 @@ type Message struct {
 	Text string `json:"text"`
 }
 
+// String implements the Stringer interface and allows for nice and simple string formatting of a log Message.
 func (m Message) String() string {
 	return fmt.Sprintf("%s %s (%s) %s", m.Timestamp.String(), m.Name, m.Instance, m.Text)
 }

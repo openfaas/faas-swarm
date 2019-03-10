@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"io"
 	"log"
@@ -33,11 +34,6 @@ type ServiceLogger interface {
 // NewLogRequestor returns a Requestor instance that can be used in the function logs endpoint
 func NewLogRequestor(client ServiceLogger) logs.Requestor {
 	return &LogRequestor{client: client}
-}
-
-// Filter implements the filter logic for the Requestor interface
-func (l LogRequestor) Filter(logs.Request, logs.Message) bool {
-	return true
 }
 
 // Query implements the actual Swarm logs request logic for the Requestor interface
@@ -74,6 +70,7 @@ func (l LogRequestor) Query(ctx context.Context, r logs.Request) (<-chan logs.Me
 // parseLogStream reads log lines from the logStream, parses them into Message objects, and sends
 // them on the msgStream channel.  Raw log lines look like 'timestamp serviceDetails rawMessage`, e.g.
 // 2019-02-09T02:34:38.914788800Z com.docker.swarm.node.id=lfplf8vfa6j2fp4xkygcze8i4,com.docker.swarm.service.id=wy8sr6u3lqx11a34t96qlbyff,com.docker.swarm.task.id=zzvbv53tdyebuhh9rquadwuud 2019/02/09 02:34:38 Error reading stdout: EOF
+// we may want to pull some inspiration from here https://github.com/docker/cli/blob/master/cli/command/service/logs.go
 func parseLogStream(ctx context.Context, name string, msgStream chan logs.Message, logStream io.ReadCloser) {
 	defer close(msgStream)
 	defer logStream.Close()
@@ -85,7 +82,8 @@ func parseLogStream(ctx context.Context, name string, msgStream chan logs.Messag
 			return
 		}
 		// trim docker log prefix
-		rawMsg := string(scanner.Bytes()[stdWriterPrefixLen:])
+
+		rawMsg := string(bytes.Trim(scanner.Bytes()[stdWriterPrefixLen:], "\x00"))
 		logParts := strings.SplitN(rawMsg, " ", 3)
 
 		ts, err := time.Parse(time.RFC3339Nano, logParts[0])
@@ -103,7 +101,7 @@ func parseLogStream(ctx context.Context, name string, msgStream chan logs.Messag
 			Name:      name, // details["com.docker.swarm.service.id"],
 			Instance:  details["com.docker.swarm.task.id"],
 			Timestamp: ts,
-			Text:      logParts[2],
+			Text:      strings.TrimSpace(logParts[2]),
 		}
 
 		msgStream <- msg
