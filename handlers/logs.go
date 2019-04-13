@@ -21,8 +21,8 @@ const (
 	stdWriterPrefixLen = 8
 )
 
-// LogRequestor implements the Requestor interface for Swarm
-type LogRequestor struct {
+// LogRequester implements the Requester interface for Swarm
+type LogRequester struct {
 	client ServiceLogger
 }
 
@@ -31,13 +31,13 @@ type ServiceLogger interface {
 	ServiceLogs(ctx context.Context, serviceID string, options types.ContainerLogsOptions) (io.ReadCloser, error)
 }
 
-// NewLogRequestor returns a Requestor instance that can be used in the function logs endpoint
-func NewLogRequestor(client ServiceLogger) logs.Requestor {
-	return &LogRequestor{client: client}
+// NewLogRequester returns a Requestor instance that can be used in the function logs endpoint
+func NewLogRequester(client ServiceLogger) logs.Requester {
+	return &LogRequester{client: client}
 }
 
-// Query implements the actual Swarm logs request logic for the Requestor interface
-func (l LogRequestor) Query(ctx context.Context, r logs.Request) (<-chan logs.Message, error) {
+// Query implements the actual Swarm logs request logic for the Requester interface
+func (l LogRequester) Query(ctx context.Context, r logs.Request) (<-chan logs.Message, error) {
 
 	options := types.ContainerLogsOptions{
 		ShowStderr: true,

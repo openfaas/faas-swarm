@@ -141,14 +141,6 @@
   version = "v1.6.2"
 
 [[projects]]
-  digest = "1:7b5c6e2eeaa9ae5907c391a91c132abfd5c9e8a784a341b5625e750c67e6825d"
-  name = "github.com/gorilla/websocket"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
-  version = "v1.4.0"
-
-[[projects]]
   digest = "1:ee4d4af67d93cc7644157882329023ce9a7bcfce956a079069a9405521c7cc8d"
   name = "github.com/opencontainers/go-digest"
   packages = ["."]
@@ -177,7 +169,7 @@
 
 [[projects]]
   branch = "feature-define-the-logging-interface"
-  digest = "1:fae8ef7ae1bd8c3283f66f5e1e6f373711900cdcf8944f4042274f6a4783c5e5"
+  digest = "1:6fc2cfb5528652b5c971e917c0568abf47d01d9d952f366336ba5454d65d4ef1"
   name = "github.com/openfaas/faas-provider"
   packages = [
     ".",
@@ -188,7 +180,7 @@
     "types",
   ]
   pruneopts = "UT"
-  revision = "06a8c5b1f53bd71bd039c56b95f46283ee3d485a"
+  revision = "d7f1635b3a5f70b60de6c841ecbec4c7cd695866"
   source = "github.com/LucasRoesler/faas-provider"
 
 [[projects]]
@@ -254,7 +246,6 @@
     "github.com/docker/docker/registry",
     "github.com/docker/go-units",
     "github.com/gorilla/mux",
-    "github.com/gorilla/websocket",
     "github.com/openfaas/faas-provider",
     "github.com/openfaas/faas-provider/logs",
     "github.com/openfaas/faas-provider/proxy",

@@ -12,22 +12,23 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gorilla/websocket"
-
 	"github.com/openfaas/faas-provider/httputils"
 )
 
-var upgrader = websocket.Upgrader{} // use default options
-
-// Requestor submits queries the logging system.
+// Requester submits queries the logging system.
 // This will be passed to the log handler constructor.
-type Requestor interface {
+type Requester interface {
 	// Query submits a log request to the actual logging system.
 	Query(context.Context, Request) (<-chan Message, error)
 }
 
-// NewSimpleLogHandlerFunc creates and http HandlerFunc from the supplied log Requestor.
-func NewSimpleLogHandlerFunc(requestor Requestor) http.HandlerFunc {
+// NewLogHandlerFunc creates an http HandlerFunc from the supplied log Requestor.
+//
+// The resulting handler is responsible for parsing the http.Request into a logs Request and
+// and then streaming the results over http. The handler will also apply the Pattern filter and the Limit.
+// So these do not need to be implemented in the Requester, although it is recommended to use these in your
+// query implementation if the underlying log system natively supports them.
+func NewLogHandlerFunc(requestor Requester) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Body != nil {
 			defer r.Body.Close()
@@ -49,7 +50,7 @@ func NewSimpleLogHandlerFunc(requestor Requestor) http.HandlerFunc {
 		logRequest, err := parseRequest(r)
 		if err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
-			httputils.WriteError(w, http.StatusUnprocessableEntity, "could not parse the log request")
+			httputils.ErrorF(w, http.StatusUnprocessableEntity, "could not parse the log request")
 			return
 		}
 
@@ -58,7 +59,7 @@ func NewSimpleLogHandlerFunc(requestor Requestor) http.HandlerFunc {
 		messages, err := requestor.Query(ctx, logRequest)
 		if err != nil {
 			// add smarter error handling here
-			httputils.WriteError(w, http.StatusInternalServerError, "function log request failed")
+			httputils.ErrorF(w, http.StatusInternalServerError, "function log request failed")
 			return
 		}
 
@@ -121,8 +122,10 @@ func NewSimpleLogHandlerFunc(requestor Requestor) http.HandlerFunc {
 	}
 }
 
-// NewLogHandlerFunc creates and http HandlerFunc from the supplied log Requestor.
-func NewLogHandlerFunc(requestor Requestor) http.HandlerFunc {
+// NewHijackLogHandlerFunc creates an http HandlerFunc from the supplied log Requestor.
+//
+// Deprecated: This remains in the package for reference purposes, providers should instead use NewLogHandlerFunc
+func NewHijackLogHandlerFunc(requestor Requester) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Body != nil {
 			defer r.Body.Close()
@@ -138,7 +141,7 @@ func NewLogHandlerFunc(requestor Requestor) http.HandlerFunc {
 		logRequest, err := parseRequest(r)
 		if err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
-			httputils.WriteError(w, http.StatusUnprocessableEntity, "could not parse the log request")
+			httputils.ErrorF(w, http.StatusUnprocessableEntity, "could not parse the log request")
 			return
 		}
 
@@ -148,7 +151,7 @@ func NewLogHandlerFunc(requestor Requestor) http.HandlerFunc {
 		messages, err := requestor.Query(ctx, logRequest)
 		if err != nil {
 			// add smarter error handling here?
-			httputils.WriteError(w, http.StatusInternalServerError, "function log request failed")
+			httputils.ErrorF(w, http.StatusInternalServerError, "function log request failed")
 			return
 		}
 
@@ -265,84 +268,6 @@ func closeNotify(ctx context.Context, c net.Conn) <-chan error {
 	return notify
 }
 
-// NewWSLogHandlerFunc creates and http HandlerFunc from the supplied log Requestor.
-func NewWSLogHandlerFunc(requestor Requestor) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Body != nil {
-			defer r.Body.Close()
-		}
-
-		c, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			log.Printf("LogHandler: unable to upgrade response to a websocket: %s\n", err.Error())
-			http.NotFound(w, r)
-			return
-		}
-		defer c.Close()
-
-		logRequest, err := parseRequest(r)
-		if err != nil {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			httputils.WriteError(w, http.StatusUnprocessableEntity, "could not parse the log request")
-			return
-		}
-
-		ctx, cancelQuery := context.WithCancel(r.Context())
-		defer cancelQuery()
-		messages, err := requestor.Query(ctx, logRequest)
-		if err != nil {
-			// add smarter error handling here
-			httputils.WriteError(w, http.StatusInternalServerError, "function log request failed")
-			return
-		}
-
-		sent := 0
-
-		if logRequest.Limit > 0 {
-			log.Printf("LogHandler: watch for and stream `%d` log messages\n", logRequest.Limit)
-		}
-
-		msgFilter := newFilter(logRequest)
-
-		for messages != nil {
-			select {
-			case msg, ok := <-messages:
-				if !ok {
-					log.Println("LogHandler: end of log stream")
-					messages = nil
-					return
-				}
-
-				if !msgFilter(&msg) {
-					continue
-				}
-
-				// serialize and write the msg to the http ResponseWriter
-				err := c.WriteJSON(msg)
-				if err != nil {
-					// can't actually write the status header here so we should json serialize an error
-					// and return that because we have already sent the content type and status code
-					log.Printf("LogHandler: failed to serialize log message: '%s'\n", msg.String())
-					log.Println(err.Error())
-					// write json error message here ?
-					c.WriteJSON(Message{Text: "failed to serialize log message"})
-					return
-				}
-
-				if logRequest.Limit > 0 {
-					sent++
-					if sent >= logRequest.Limit {
-						log.Printf("LogHandler: reached message limit '%d'\n", logRequest.Limit)
-						return
-					}
-				}
-			}
-		}
-
-		return
-	}
-}
-
 // parseRequest extracts the logRequest from the GET variables or from the POST body
 func parseRequest(r *http.Request) (logRequest Request, err error) {
 	switch r.Method {
@@ -359,7 +284,7 @@ func parseRequest(r *http.Request) (logRequest Request, err error) {
 		}
 		// ignore error because it will default to false if we can't parse it
 		logRequest.Follow, _ = strconv.ParseBool(getValue(query, "follow"))
-		logRequest.Invert, _ = strconv.ParseBool(getValue(query, "invert"))
+		logRequest.InvertPattern, _ = strconv.ParseBool(getValue(query, "invert"))
 
 		sinceStr := getValue(query, "since")
 		if sinceStr != "" {
@@ -407,7 +332,7 @@ func newFilter(r Request) func(m *Message) bool {
 	}
 
 	return func(m *Message) bool {
-		if r.Invert {
+		if r.InvertPattern {
 			return matchesInstance(r.Instance, m) && !matchesPattern(pattern, m)
 		}
 		return matchesInstance(r.Instance, m) && matchesPattern(pattern, m)
