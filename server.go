@@ -56,7 +56,7 @@ func main() {
 		ReplicaReader:  handlers.ReplicaReader(dockerClient),
 		ReplicaUpdater: handlers.ReplicaUpdater(dockerClient),
 		UpdateHandler:  handlers.UpdateHandler(dockerClient, maxRestarts, restartDelay),
-		Health:         handlers.Health(),
+		HealthHandler:  handlers.Health(),
 		InfoHandler:    handlers.MakeInfoHandler(version.BuildVersion(), version.GitCommit),
 		SecretHandler:  handlers.MakeSecretsHandler(dockerClient),
 	}
