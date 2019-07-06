@@ -51,8 +51,8 @@ func (l LogRequester) Query(ctx context.Context, r logs.Request) (<-chan logs.Me
 		options.Since = r.Since.Format(time.RFC3339)
 	}
 
-	if r.Limit > 0 {
-		options.Tail = strconv.Itoa(r.Limit)
+	if r.Tail > 0 {
+		options.Tail = strconv.Itoa(r.Tail)
 	}
 
 	logStream, err := l.client.ServiceLogs(ctx, r.Name, options)

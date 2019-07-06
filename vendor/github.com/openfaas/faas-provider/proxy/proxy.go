@@ -29,7 +29,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/openfaas/faas-provider/httputils"
+	"github.com/openfaas/faas-provider/httputil"
 )
 
 const (
@@ -112,7 +112,7 @@ func proxyRequest(w http.ResponseWriter, originalReq *http.Request, proxyClient 
 	pathVars := mux.Vars(originalReq)
 	functionName := pathVars["name"]
 	if functionName == "" {
-		httputils.ErrorF(w, http.StatusBadRequest, errMissingFunctionName)
+		httputil.Errorf(w, http.StatusBadRequest, errMissingFunctionName)
 		return
 	}
 
@@ -120,16 +120,18 @@ func proxyRequest(w http.ResponseWriter, originalReq *http.Request, proxyClient 
 	if resolveErr != nil {
 		// TODO: Should record the 404/not found error in Prometheus.
 		log.Printf("resolver error: cannot find %s: %s\n", functionName, resolveErr.Error())
-		httputils.ErrorF(w, http.StatusNotFound, "Cannot find service: %s.", functionName)
+		httputil.Errorf(w, http.StatusNotFound, "Cannot find service: %s.", functionName)
 		return
 	}
 
 	proxyReq, err := buildProxyRequest(originalReq, functionAddr, pathVars["params"])
 	if err != nil {
-		httputils.ErrorF(w, http.StatusInternalServerError, "Failed to resolve service: %s.", functionName)
+		httputil.Errorf(w, http.StatusInternalServerError, "Failed to resolve service: %s.", functionName)
 		return
 	}
-	defer proxyReq.Body.Close()
+	if proxyReq.Body != nil {
+		defer proxyReq.Body.Close()
+	}
 
 	start := time.Now()
 	response, err := proxyClient.Do(proxyReq.WithContext(ctx))
@@ -138,7 +140,7 @@ func proxyRequest(w http.ResponseWriter, originalReq *http.Request, proxyClient 
 	if err != nil {
 		log.Printf("error with proxy request to: %s, %s\n", proxyReq.URL.String(), err.Error())
 
-		httputils.ErrorF(w, http.StatusInternalServerError, "Can't reach service for: %s.", functionName)
+		httputil.Errorf(w, http.StatusInternalServerError, "Can't reach service for: %s.", functionName)
 		return
 	}
 
@@ -148,7 +150,7 @@ func proxyRequest(w http.ResponseWriter, originalReq *http.Request, proxyClient 
 	copyHeaders(clientHeader, &response.Header)
 	w.Header().Set("Content-Type", getContentType(response.Header, originalReq.Header))
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(response.StatusCode)
 	io.Copy(w, response.Body)
 }
 

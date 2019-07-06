@@ -60,7 +60,7 @@ func main() {
 		HealthHandler:  handlers.Health(),
 		InfoHandler:    handlers.MakeInfoHandler(version.BuildVersion(), version.GitCommit),
 		SecretHandler:  handlers.MakeSecretsHandler(dockerClient),
-		LogHandler:     logs.NewLogHandlerFunc(handlers.NewLogRequester(dockerClient)),
+		LogHandler:     logs.NewLogHandlerFunc(handlers.NewLogRequester(dockerClient), cfg.WriteTimeout),
 	}
 
 	bootstrapConfig := bootTypes.FaaSConfig{

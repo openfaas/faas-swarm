@@ -164,24 +164,23 @@
   name = "github.com/openfaas/faas"
   packages = ["gateway/requests"]
   pruneopts = "UT"
-  revision = "a65df4795bc66147c41161c48bfd4c72f60c7434"
-  version = "0.9.14"
+  revision = "4c12c2e2f8f3f4b4bfd740afee628d8b5524230c"
+  version = "0.15.0"
 
 [[projects]]
-  branch = "feature-define-the-logging-interface"
-  digest = "1:6fc2cfb5528652b5c971e917c0568abf47d01d9d952f366336ba5454d65d4ef1"
+  digest = "1:89d8d93b38c5d791ed29b0c43e2dabea0aeb162ec629e0292443d36458024727"
   name = "github.com/openfaas/faas-provider"
   packages = [
     ".",
     "auth",
-    "httputils",
+    "httputil",
     "logs",
     "proxy",
     "types",
   ]
   pruneopts = "UT"
-  revision = "d7f1635b3a5f70b60de6c841ecbec4c7cd695866"
-  source = "github.com/LucasRoesler/faas-provider"
+  revision = "a04c03d034b4058880de6b6c0606ec02a94ef025"
+  version = "0.9.3"
 
 [[projects]]
   digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"

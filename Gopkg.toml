@@ -12,11 +12,11 @@
 
 [[constraint]]
   name = "github.com/openfaas/faas"
-  version = "0.9.14"
+  version = "0.15.0"
 
 [[constraint]]
   name = "github.com/openfaas/faas-provider"
-  version = "0.9.0"
+  version = "0.9.3"
 
 # match docker/distribution revision with moby
 [[override]]
