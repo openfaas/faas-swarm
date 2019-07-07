@@ -86,6 +86,15 @@ func parseLogStream(ctx context.Context, name string, msgStream chan logs.Messag
 		rawMsg := string(bytes.Trim(scanner.Bytes()[stdWriterPrefixLen:], "\x00"))
 		logParts := strings.SplitN(rawMsg, " ", 3)
 
+		// this should never happen because every log line should have a `Timestamp ServiceDetails RawMsg`,
+		// the Docker API ensures the Timestamp and ServiceDetails will not be empty and even when
+		// the raw message is an empty string, logParts will correctly have an empty string for the
+		// third part. If there are not 3 parts, then there has been an Docker API failure
+		if len(logParts) != 3 {
+			log.Printf("parseLogStream: failed to parse log message, unexpected number of parts: '%s'", rawMsg)
+			return
+		}
+
 		ts, err := time.Parse(time.RFC3339Nano, logParts[0])
 		if err != nil {
 			log.Printf("parseLogStream: failed to parse timestamp: %sn", err)
