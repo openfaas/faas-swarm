@@ -220,7 +220,7 @@ func updateSecret(c client.SecretAPIClient, body []byte) (responseStatus int, re
 		)
 	}
 
-	return http.StatusOK, nil,nil
+	return http.StatusOK, nil, nil
 }
 
 func deleteSecret(c client.SecretAPIClient, body []byte) (responseStatus int, responseBody []byte, err error) {
@@ -255,7 +255,6 @@ func deleteSecret(c client.SecretAPIClient, body []byte) (responseStatus int, re
 
 	return http.StatusOK, nil, nil
 }
-
 
 func makeSecretsArray(c *client.Client, secretNames []string) ([]*swarm.SecretReference, error) {
 	values := []*swarm.SecretReference{}
