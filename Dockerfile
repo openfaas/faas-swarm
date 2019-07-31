@@ -1,4 +1,4 @@
-FROM golang:1.10.4 as build
+FROM golang:1.11 as build
 
 RUN mkdir -p /go/src/github.com/openfaas/faas-swarm/
 
