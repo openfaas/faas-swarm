@@ -7,7 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/openfaas/faas-provider/types"
+	typesv1 "github.com/openfaas/faas-provider/types"
+
 	"github.com/openfaas/faas-swarm/handlers"
 )
 
@@ -25,7 +26,7 @@ func TestMakeInfoHandler(t *testing.T) {
 	}
 
 	handler := handlers.MakeInfoHandler(infoTestVersion, infoTestSHA)
-	infoRequest := types.InfoRequest{}
+	infoRequest := typesv1.InfoRequest{}
 
 	handler(rr, req)
 	body, err := ioutil.ReadAll(rr.Body)

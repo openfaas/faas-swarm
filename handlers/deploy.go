@@ -22,8 +22,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/registry"
 	units "github.com/docker/go-units"
-
-	"github.com/openfaas/faas/gateway/requests"
+	typesv1 "github.com/openfaas/faas-provider/types"
 )
 
 const annotationLabelPrefix = "com.openfaas.annotations."
@@ -36,7 +35,7 @@ func DeployHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 		defer r.Body.Close()
 		body, _ := ioutil.ReadAll(r.Body)
 
-		request := requests.CreateFunctionRequest{}
+		request := typesv1.FunctionDeployment{}
 		err := json.Unmarshal(body, &request)
 		if err != nil {
 			log.Println("Error parsing request:", err)
@@ -121,7 +120,7 @@ func lookupNetwork(c *client.Client) (string, error) {
 	return "", nil
 }
 
-func makeSpec(request *requests.CreateFunctionRequest, maxRestarts uint64, restartDelay time.Duration, secrets []*swarm.SecretReference) (swarm.ServiceSpec, error) {
+func makeSpec(request *typesv1.FunctionDeployment, maxRestarts uint64, restartDelay time.Duration, secrets []*swarm.SecretReference) (swarm.ServiceSpec, error) {
 	constraints := []string{}
 
 	if request.Constraints != nil && len(request.Constraints) > 0 {
@@ -267,7 +266,7 @@ func parseCPU(value string) (int64, error) {
 	return v, nil
 }
 
-func buildResources(request *requests.CreateFunctionRequest) *swarm.ResourceRequirements {
+func buildResources(request *typesv1.FunctionDeployment) *swarm.ResourceRequirements {
 	var resources *swarm.ResourceRequirements
 
 	if request.Requests != nil || request.Limits != nil {
@@ -336,7 +335,7 @@ func buildResources(request *requests.CreateFunctionRequest) *swarm.ResourceRequ
 	return resources
 }
 
-func getMinReplicas(request *requests.CreateFunctionRequest) *uint64 {
+func getMinReplicas(request *typesv1.FunctionDeployment) *uint64 {
 	replicas := uint64(1)
 
 	if request.Labels != nil {
@@ -351,7 +350,7 @@ func getMinReplicas(request *requests.CreateFunctionRequest) *uint64 {
 	return &replicas
 }
 
-func buildLabels(request *requests.CreateFunctionRequest) (map[string]string, error) {
+func buildLabels(request *typesv1.FunctionDeployment) (map[string]string, error) {
 	labels := map[string]string{
 		"com.openfaas.function": request.Service,
 		"function":              "true", // backwards-compatible

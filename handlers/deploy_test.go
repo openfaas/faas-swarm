@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/openfaas/faas/gateway/requests"
+
+	typesv1 "github.com/openfaas/faas-provider/types"
+
 	"testing"
 )
 
 func Test_BuildLabels_Defaults(t *testing.T) {
-	request := &requests.CreateFunctionRequest{}
+	request := &typesv1.FunctionDeployment{}
 	val, err := buildLabels(request)
 
 	if err != nil {
@@ -28,7 +30,7 @@ func Test_BuildLabels_Defaults(t *testing.T) {
 }
 
 func Test_BuildLabels_WithAnnotations(t *testing.T) {
-	request := &requests.CreateFunctionRequest{
+	request := &typesv1.FunctionDeployment{
 		Labels:      &map[string]string{"function_name": "echo"},
 		Annotations: &map[string]string{"current-time": "Wed 25 Jul 06:41:43 BST 2018"},
 	}
@@ -49,7 +51,7 @@ func Test_BuildLabels_WithAnnotations(t *testing.T) {
 }
 
 func Test_BuildLabels_NoAnnotations(t *testing.T) {
-	request := &requests.CreateFunctionRequest{
+	request := &typesv1.FunctionDeployment{
 		Labels: &map[string]string{"function_name": "echo"},
 	}
 
@@ -69,7 +71,7 @@ func Test_BuildLabels_NoAnnotations(t *testing.T) {
 }
 
 func Test_BuildLabels_KeyClash(t *testing.T) {
-	request := &requests.CreateFunctionRequest{
+	request := &typesv1.FunctionDeployment{
 		Labels: &map[string]string{
 			"function_name": "echo",
 			fmt.Sprintf("%scurrent-time", annotationLabelPrefix): "foo",

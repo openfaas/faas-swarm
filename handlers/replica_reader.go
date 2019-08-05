@@ -12,7 +12,8 @@ import (
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 	"github.com/gorilla/mux"
-	"github.com/openfaas/faas/gateway/requests"
+
+	typesv1 "github.com/openfaas/faas-provider/types"
 )
 
 // ReplicaReader reads replica and image status data from a function
@@ -31,7 +32,7 @@ func ReplicaReader(c *client.Client) http.HandlerFunc {
 			return
 		}
 
-		var found *requests.Function
+		var found *typesv1.FunctionStatus
 		for _, function := range functions {
 			if function.Name == functionName {
 				found = &function

@@ -11,8 +11,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-
-	"github.com/openfaas/faas/gateway/requests"
+	typesv1 "github.com/openfaas/faas-provider/types"
 )
 
 // FunctionReader reads functions from Swarm metadata
@@ -36,8 +35,8 @@ func FunctionReader(wildcard bool, c client.ServiceAPIClient) http.HandlerFunc {
 	}
 }
 
-func readServices(c client.ServiceAPIClient) ([]requests.Function, error) {
-	functions := []requests.Function{}
+func readServices(c client.ServiceAPIClient) ([]typesv1.FunctionStatus, error) {
+	functions := []typesv1.FunctionStatus{}
 	serviceFilter := filters.NewArgs()
 
 	options := types.ServiceListOptions{
@@ -57,7 +56,7 @@ func readServices(c client.ServiceAPIClient) ([]requests.Function, error) {
 			// Required (copy by value)
 			labels, annotations := buildLabelsAndAnnotations(service.Spec.Labels)
 
-			f := requests.Function{
+			f := typesv1.FunctionStatus{
 				Name:            service.Spec.Name,
 				Image:           service.Spec.TaskTemplate.ContainerSpec.Image,
 				InvocationCount: 0,

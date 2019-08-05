@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/openfaas/faas/gateway/requests"
+	typesv1 "github.com/openfaas/faas-provider/types"
 )
 
 // Test_ParseMemory exploratory testing to document how to convert
@@ -31,9 +31,9 @@ func megaBytes(mbs int64) int64 {
 
 func Test_ParseMemoryLimits(t *testing.T) {
 	want := int64(256)
-	req := requests.CreateFunctionRequest{
-		Requests: &requests.FunctionResources{},
-		Limits: &requests.FunctionResources{
+	req := typesv1.FunctionDeployment{
+		Requests: &typesv1.FunctionResources{},
+		Limits: &typesv1.FunctionResources{
 			Memory: fmt.Sprintf("%d m", want),
 		},
 	}
@@ -47,11 +47,11 @@ func Test_ParseMemoryLimits(t *testing.T) {
 
 func Test_ParseMemoryRequests(t *testing.T) {
 	want := int64(256)
-	req := requests.CreateFunctionRequest{
-		Requests: &requests.FunctionResources{
+	req := typesv1.FunctionDeployment{
+		Requests: &typesv1.FunctionResources{
 			Memory: fmt.Sprintf("%d m", want),
 		},
-		Limits: &requests.FunctionResources{},
+		Limits: &typesv1.FunctionResources{},
 	}
 
 	res := buildResources(&req)
@@ -62,11 +62,11 @@ func Test_ParseMemoryRequests(t *testing.T) {
 }
 
 func Test_ParseInvalidMemoryInMegabytes(t *testing.T) {
-	req := requests.CreateFunctionRequest{
-		Requests: &requests.FunctionResources{
+	req := typesv1.FunctionDeployment{
+		Requests: &typesv1.FunctionResources{
 			Memory: "wrong",
 		},
-		Limits: &requests.FunctionResources{},
+		Limits: &typesv1.FunctionResources{},
 	}
 
 	res := buildResources(&req)
@@ -77,11 +77,11 @@ func Test_ParseInvalidMemoryInMegabytes(t *testing.T) {
 }
 
 func TestInvalidMemoryRequests_Ignored(t *testing.T) {
-	req := requests.CreateFunctionRequest{
-		Requests: &requests.FunctionResources{
+	req := typesv1.FunctionDeployment{
+		Requests: &typesv1.FunctionResources{
 			Memory: "invalid",
 		},
-		Limits: &requests.FunctionResources{},
+		Limits: &typesv1.FunctionResources{},
 	}
 
 	res := buildResources(&req)
@@ -92,11 +92,11 @@ func TestInvalidMemoryRequests_Ignored(t *testing.T) {
 }
 
 func TestInvalidMemoryLimits_Ignored(t *testing.T) {
-	req := requests.CreateFunctionRequest{
-		Limits: &requests.FunctionResources{
+	req := typesv1.FunctionDeployment{
+		Limits: &typesv1.FunctionResources{
 			Memory: "invalid",
 		},
-		Requests: &requests.FunctionResources{},
+		Requests: &typesv1.FunctionResources{},
 	}
 
 	res := buildResources(&req)
@@ -109,9 +109,9 @@ func TestInvalidMemoryLimits_Ignored(t *testing.T) {
 func TestBuildSwarmResourcesAddsCPULimits(t *testing.T) {
 	want := int64(1000000)
 
-	req := requests.CreateFunctionRequest{
-		Requests: &requests.FunctionResources{},
-		Limits: &requests.FunctionResources{
+	req := typesv1.FunctionDeployment{
+		Requests: &typesv1.FunctionResources{},
+		Limits: &typesv1.FunctionResources{
 			CPU: fmt.Sprintf("%d", want),
 		},
 	}
@@ -125,11 +125,11 @@ func TestBuildSwarmResourcesAddsCPULimits(t *testing.T) {
 
 func TestBuildSwarmResourcesAddsCPUReservations(t *testing.T) {
 	want := int64(1000000)
-	req := requests.CreateFunctionRequest{
-		Requests: &requests.FunctionResources{
+	req := typesv1.FunctionDeployment{
+		Requests: &typesv1.FunctionResources{
 			CPU: fmt.Sprintf("%d", want),
 		},
-		Limits: &requests.FunctionResources{},
+		Limits: &typesv1.FunctionResources{},
 	}
 
 	res := buildResources(&req)
@@ -140,9 +140,9 @@ func TestBuildSwarmResourcesAddsCPUReservations(t *testing.T) {
 }
 
 func TestInvalidCPULimits_Ignored(t *testing.T) {
-	req := requests.CreateFunctionRequest{
-		Requests: &requests.FunctionResources{},
-		Limits: &requests.FunctionResources{
+	req := typesv1.FunctionDeployment{
+		Requests: &typesv1.FunctionResources{},
+		Limits: &typesv1.FunctionResources{
 			CPU: "invalid",
 		},
 	}
@@ -155,9 +155,9 @@ func TestInvalidCPULimits_Ignored(t *testing.T) {
 }
 
 func TestInvalidCPURequests_Ignored(t *testing.T) {
-	req := requests.CreateFunctionRequest{
-		Limits: &requests.FunctionResources{},
-		Requests: &requests.FunctionResources{
+	req := typesv1.FunctionDeployment{
+		Limits: &typesv1.FunctionResources{},
+		Requests: &typesv1.FunctionResources{
 			CPU: "invalid",
 		},
 	}

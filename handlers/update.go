@@ -14,7 +14,7 @@ import (
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 
-	"github.com/openfaas/faas/gateway/requests"
+	typesv1 "github.com/openfaas/faas-provider/types"
 )
 
 // UpdateHandler updates an existng function
@@ -26,7 +26,7 @@ func UpdateHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 		defer r.Body.Close()
 		body, _ := ioutil.ReadAll(r.Body)
 
-		request := requests.CreateFunctionRequest{}
+		request := typesv1.FunctionDeployment{}
 		err := json.Unmarshal(body, &request)
 		if err != nil {
 			log.Println("Error parsing request:", err)
@@ -104,7 +104,7 @@ func UpdateHandler(c *client.Client, maxRestarts uint64, restartDelay time.Durat
 	}
 }
 
-func updateSpec(request *requests.CreateFunctionRequest, spec *swarm.ServiceSpec, maxRestarts uint64, restartDelay time.Duration, secrets []*swarm.SecretReference) error {
+func updateSpec(request *typesv1.FunctionDeployment, spec *swarm.ServiceSpec, maxRestarts uint64, restartDelay time.Duration, secrets []*swarm.SecretReference) error {
 
 	constraints := []string{}
 	if request.Constraints != nil && len(request.Constraints) > 0 {

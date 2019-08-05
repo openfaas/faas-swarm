@@ -12,8 +12,9 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/openfaas/faas-swarm/handlers"
-	"github.com/openfaas/faas/gateway/requests"
 	"golang.org/x/net/context"
+
+	typesv1 "github.com/openfaas/faas-provider/types"
 )
 
 type testServiceApiClient struct {
@@ -148,7 +149,7 @@ func TestReaderSuccessReturnsCorrectBodyWithOneFunction(t *testing.T) {
 	r := &http.Request{}
 	handler.ServeHTTP(w, r)
 
-	functions := []requests.Function{
+	functions := []typesv1.FunctionStatus{
 		{
 			Name:            "bar",
 			Image:           "foo/bar:latest",
