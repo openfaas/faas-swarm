@@ -164,11 +164,11 @@
   name = "github.com/openfaas/faas"
   packages = ["gateway/requests"]
   pruneopts = "UT"
-  revision = "df97efafae36ce7093ad353e3e6acc0e93d6300e"
-  version = "0.16.0"
+  revision = "0a90125aba339a8133009f215ed6d2d8c19277f8"
+  version = "0.17.4"
 
 [[projects]]
-  digest = "1:e595b78e3004db99c1f7a4eee13755b2420f06c0089b70c84cb73a7d73af21a2"
+  digest = "1:4d2aae011581a08fbac07ce852b5296984b12d9b8ea8bd71306353d43659ad16"
   name = "github.com/openfaas/faas-provider"
   packages = [
     ".",
@@ -179,8 +179,8 @@
     "types",
   ]
   pruneopts = "UT"
-  revision = "a7f9772feb70aae25b0c4420dbb64ed31684c525"
-  version = "0.9.5"
+  revision = "ba3fa3b0ae00f0b9222851f3e03b2e6ea8672998"
+  version = "0.10.1"
 
 [[projects]]
   digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
