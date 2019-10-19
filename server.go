@@ -41,11 +41,14 @@ func main() {
 	restartDelay := time.Second * 5
 
 	readConfig := types.ReadConfig{}
-	osEnv := types.OsEnv{}
-	cfg := readConfig.Read(osEnv)
+	osEnv := bootTypes.OsEnv{}
+	cfg, err := readConfig.Read(osEnv)
+	if err != nil {
+		log.Fatalf("Error reading config: %s", err.Error())
+	}
 
-	log.Printf("HTTP Read Timeout: %s\n", cfg.ReadTimeout)
-	log.Printf("HTTP Write Timeout: %s\n", cfg.WriteTimeout)
+	log.Printf("HTTP Read Timeout: %s\n", cfg.FaaSConfig.GetReadTimeout())
+	log.Printf("HTTP Write Timeout: %s\n", cfg.FaaSConfig.WriteTimeout)
 
 	funcProxyHandler := handlers.NewFunctionLookup(dockerClient, cfg.DNSRoundRobin)
 
@@ -53,23 +56,23 @@ func main() {
 		DeleteHandler:  handlers.DeleteHandler(dockerClient),
 		DeployHandler:  handlers.DeployHandler(dockerClient, maxRestarts, restartDelay),
 		FunctionReader: handlers.FunctionReader(true, dockerClient),
-		FunctionProxy:  proxy.NewHandlerFunc(cfg.ReadTimeout, funcProxyHandler),
+		FunctionProxy:  proxy.NewHandlerFunc(cfg.FaaSConfig, funcProxyHandler),
 		ReplicaReader:  handlers.ReplicaReader(dockerClient),
 		ReplicaUpdater: handlers.ReplicaUpdater(dockerClient),
 		UpdateHandler:  handlers.UpdateHandler(dockerClient, maxRestarts, restartDelay),
 		HealthHandler:  handlers.Health(),
 		InfoHandler:    handlers.MakeInfoHandler(version.BuildVersion(), version.GitCommit),
 		SecretHandler:  handlers.MakeSecretsHandler(dockerClient),
-		LogHandler:     logs.NewLogHandlerFunc(handlers.NewLogRequester(dockerClient), cfg.WriteTimeout),
+		LogHandler:     logs.NewLogHandlerFunc(handlers.NewLogRequester(dockerClient), cfg.FaaSConfig.WriteTimeout),
 	}
 
 	bootstrapConfig := bootTypes.FaaSConfig{
-		ReadTimeout:     cfg.ReadTimeout,
-		WriteTimeout:    cfg.WriteTimeout,
-		TCPPort:         &cfg.TCPPort,
-		EnableHealth:    true,
-		EnableBasicAuth: cfg.EnableBasicAuth,
-		SecretMountPath: "/run/secrets",
+		ReadTimeout:     cfg.FaaSConfig.GetReadTimeout(),
+		WriteTimeout:    cfg.FaaSConfig.WriteTimeout,
+		TCPPort:         cfg.FaaSConfig.TCPPort,
+		EnableHealth:    cfg.FaaSConfig.EnableHealth,
+		EnableBasicAuth: cfg.FaaSConfig.EnableBasicAuth,
+		SecretMountPath: cfg.FaaSConfig.SecretMountPath,
 	}
 
 	log.Printf("Basic authentication: %v\n", bootstrapConfig.EnableBasicAuth)
