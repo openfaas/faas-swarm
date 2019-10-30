@@ -52,8 +52,6 @@ func main() {
 
 	funcProxyHandler := handlers.NewFunctionLookup(dockerClient, cfg.DNSRoundRobin)
 
-	cfg.FaaSConfig.EnableHealth = true // Needed due to breaking change in #534
-
 	bootstrapHandlers := bootTypes.FaaSHandlers{
 		DeleteHandler:  handlers.DeleteHandler(dockerClient),
 		DeployHandler:  handlers.DeployHandler(dockerClient, maxRestarts, restartDelay),
@@ -72,7 +70,6 @@ func main() {
 		ReadTimeout:     cfg.FaaSConfig.GetReadTimeout(),
 		WriteTimeout:    cfg.FaaSConfig.WriteTimeout,
 		TCPPort:         cfg.FaaSConfig.TCPPort,
-		EnableHealth:    cfg.FaaSConfig.EnableHealth,
 		EnableBasicAuth: cfg.FaaSConfig.EnableBasicAuth,
 		SecretMountPath: cfg.FaaSConfig.SecretMountPath,
 	}
