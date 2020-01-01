@@ -10,16 +10,26 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
-	"github.com/openfaas/faas/gateway/requests"
+	"github.com/docker/docker/api/types/swarm"
 )
 
+type deleteFunctionRequest struct {
+	FunctionName string `json:"functionName"`
+}
+
+// ServiceDeleter is the sub-interface of client.ServiceAPIClient that is required for deleting
+// a OpenFaaS Function. This interface is satisfied by *client.Client
+type ServiceDeleter interface {
+	ServiceList(ctx context.Context, options types.ServiceListOptions) ([]swarm.Service, error)
+	ServiceRemove(ctx context.Context, serviceID string) error
+}
+
 // DeleteHandler delete a function
-func DeleteHandler(c *client.Client) http.HandlerFunc {
+func DeleteHandler(c ServiceDeleter) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		req := requests.DeleteFunctionRequest{}
+		req := deleteFunctionRequest{}
 		defer r.Body.Close()
 		reqData, _ := ioutil.ReadAll(r.Body)
 		unmarshalErr := json.Unmarshal(reqData, &req)

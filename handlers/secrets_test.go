@@ -12,7 +12,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
-	"github.com/openfaas/faas/gateway/requests"
+	typesv1 "github.com/openfaas/faas-provider/types"
 )
 
 func genFakeSecret(name string, data string, includeOwnerLabel bool) swarm.Secret {
@@ -185,7 +185,7 @@ func Test_SecretsHandler(t *testing.T) {
 
 		decoder := json.NewDecoder(resp.Body)
 
-		secretList := []requests.Secret{}
+		secretList := []typesv1.Secret{}
 		err := decoder.Decode(&secretList)
 		if err != nil {
 			t.Error(err)

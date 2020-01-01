@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/openfaas/faas-provider/types"
+	typesv1 "github.com/openfaas/faas-provider/types"
 )
 
 const (
-	//SwarmIdentifier identifier string for swarm provider
-	SwarmIdentifier = "swarm"
-	//SwarmProvider provider string for swarm provider
-	SwarmProvider = "faas-swarm"
+	//OrchestrationIdentifier identifier string for swarm provider
+	OrchestrationIdentifier = "swarm"
+	//ProviderName provider string for swarm provider
+	ProviderName = "faas-swarm"
 )
 
 //MakeInfoHandler creates handler for /system/info endpoint
@@ -21,16 +21,16 @@ func MakeInfoHandler(version, sha string) http.HandlerFunc {
 			defer r.Body.Close()
 		}
 
-		infoRequest := types.InfoRequest{
-			Orchestration: SwarmIdentifier,
-			Provider:      SwarmProvider,
-			Version: types.ProviderVersion{
+		infoResponse := typesv1.InfoResponse{
+			Orchestration: OrchestrationIdentifier,
+			Provider:      ProviderName,
+			Version: typesv1.ProviderVersion{
 				Release: version,
 				SHA:     sha,
 			},
 		}
 
-		jsonOut, marshalErr := json.Marshal(infoRequest)
+		jsonOut, marshalErr := json.Marshal(infoResponse)
 		if marshalErr != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

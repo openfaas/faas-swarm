@@ -160,15 +160,7 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:0250441ac9f681c839722297897952ee6d633f2a37dc254eca9d6d21bd1e877d"
-  name = "github.com/openfaas/faas"
-  packages = ["gateway/requests"]
-  pruneopts = "UT"
-  revision = "0a90125aba339a8133009f215ed6d2d8c19277f8"
-  version = "0.17.4"
-
-[[projects]]
-  digest = "1:a32a2587b7ec1ab3661ceaf1779e8dc65d98b3b9482b50184186a3829730c6a7"
+  digest = "1:7a20be0bdfb2c05a4a7b955cb71645fe2983aa3c0bbae10d6bba3e2dd26ddd0d"
   name = "github.com/openfaas/faas-provider"
   packages = [
     ".",
@@ -179,8 +171,8 @@
     "types",
   ]
   pruneopts = "UT"
-  revision = "7677057e416ba796df41f9f366956a491c5684ff"
-  version = "0.13.2"
+  revision = "8f7c35975e1b2bf8286c2f90ee51633eec427491"
+  version = "0.14.0"
 
 [[projects]]
   digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
@@ -249,7 +241,6 @@
     "github.com/openfaas/faas-provider/logs",
     "github.com/openfaas/faas-provider/proxy",
     "github.com/openfaas/faas-provider/types",
-    "github.com/openfaas/faas/gateway/requests",
     "golang.org/x/net/context",
   ]
   solver-name = "gps-cdcl"
