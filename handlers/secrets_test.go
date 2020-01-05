@@ -167,8 +167,8 @@ func Test_SecretsHandler(t *testing.T) {
 		secretsHandler(w, req)
 
 		resp := w.Result()
-		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected status code '%d', got '%d'", http.StatusInternalServerError, resp.StatusCode)
+		if resp.StatusCode != http.StatusMethodNotAllowed {
+			t.Errorf("expected status code '%d', got '%d'", http.StatusMethodNotAllowed, resp.StatusCode)
 		}
 	})
 

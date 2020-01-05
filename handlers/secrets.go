@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/docker/cli/opts"
-	"github.com/docker/docker/api/types/filters"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/docker/cli/opts"
+	"github.com/docker/docker/api/types/filters"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
@@ -22,6 +23,7 @@ var (
 	ownerLabelValue = "openfaas"
 )
 
+//MakeSecretsHandler returns handler for managing secrets
 func MakeSecretsHandler(c client.SecretAPIClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Body != nil {
@@ -31,9 +33,7 @@ func MakeSecretsHandler(c client.SecretAPIClient) http.HandlerFunc {
 		body, readBodyErr := ioutil.ReadAll(r.Body)
 		if readBodyErr != nil {
 			log.Printf("couldn't read body of a request: %s", readBodyErr)
-
 			w.WriteHeader(http.StatusInternalServerError)
-
 			return
 		}
 
@@ -51,7 +51,8 @@ func MakeSecretsHandler(c client.SecretAPIClient) http.HandlerFunc {
 			responseStatus, responseBody, responseErr = createNewSecret(c, body)
 			break
 		case http.MethodPut:
-			responseStatus, responseBody, responseErr = updateSecret(c, body)
+			responseStatus = http.StatusMethodNotAllowed
+			responseErr = fmt.Errorf("faas-swarm is unable to update secrets, delete and re-create or use a new name")
 			break
 		case http.MethodDelete:
 			responseStatus, responseBody, responseErr = deleteSecret(c, body)
@@ -60,20 +61,15 @@ func MakeSecretsHandler(c client.SecretAPIClient) http.HandlerFunc {
 
 		if responseErr != nil {
 			log.Println(responseErr)
-
 			w.WriteHeader(responseStatus)
-
 			return
 		}
 
 		if responseBody != nil {
 			_, writeErr := w.Write(responseBody)
-
 			if writeErr != nil {
 				log.Println("cannot write body of a response")
-
 				w.WriteHeader(http.StatusInternalServerError)
-
 				return
 			}
 		}
@@ -99,28 +95,28 @@ func getSecretsWithLabel(c client.SecretAPIClient, labelName string, labelValue 
 	return filteredSecrets, nil
 }
 
-func getSecretWithName(c client.SecretAPIClient, name string) (secret *swarm.Secret, err error, status int) {
+func getSecretWithName(c client.SecretAPIClient, name string) (secret *swarm.Secret, status int, err error) {
 	secrets, secretListErr := c.SecretList(context.Background(), types.SecretListOptions{})
 	if secretListErr != nil {
-		return nil, secretListErr, http.StatusInternalServerError
+		return nil, http.StatusInternalServerError, secretListErr
 	}
 
 	for _, secret := range secrets {
 		if secret.Spec.Name == name {
 			if secret.Spec.Labels[ownerLabel] == ownerLabelValue {
-				return &secret, nil, http.StatusOK
+				return &secret, http.StatusOK, nil
 			}
 
-			return nil, fmt.Errorf(
+			return nil, http.StatusInternalServerError, fmt.Errorf(
 				"found secret with name: %s, but it doesn't have label: %s == %s",
 				name,
 				ownerLabel,
 				ownerLabelValue,
-			), http.StatusInternalServerError
+			)
 		}
 	}
 
-	return nil, fmt.Errorf("not found secret with name: %s", name), http.StatusNotFound
+	return nil, http.StatusNotFound, fmt.Errorf("unable to found secret with name: %s", name)
 }
 
 func getSecrets(c client.SecretAPIClient, _ []byte) (responseStatus int, responseBody []byte, err error) {
@@ -140,7 +136,7 @@ func getSecrets(c client.SecretAPIClient, _ []byte) (responseStatus int, respons
 		results = append(results, requests.Secret{Name: s.Spec.Name, Value: string(s.Spec.Data)})
 	}
 
-	resultsJson, marshalErr := json.Marshal(results)
+	resultsJSON, marshalErr := json.Marshal(results)
 	if marshalErr != nil {
 		return http.StatusInternalServerError,
 			nil,
@@ -148,7 +144,7 @@ func getSecrets(c client.SecretAPIClient, _ []byte) (responseStatus int, respons
 
 	}
 
-	return http.StatusOK, resultsJson, nil
+	return http.StatusOK, resultsJSON, nil
 }
 
 func createNewSecret(c client.SecretAPIClient, body []byte) (responseStatus int, responseBody []byte, err error) {
@@ -181,48 +177,6 @@ func createNewSecret(c client.SecretAPIClient, body []byte) (responseStatus int,
 	return http.StatusCreated, nil, nil
 }
 
-func updateSecret(c client.SecretAPIClient, body []byte) (responseStatus int, responseBody []byte, err error) {
-	var secret requests.Secret
-
-	unmarshalErr := json.Unmarshal(body, &secret)
-	if unmarshalErr != nil {
-		return http.StatusBadRequest, nil, fmt.Errorf(
-			"error unmarshaling secret in secretPutHandler: %s",
-			unmarshalErr,
-		)
-	}
-
-	foundSecret, getSecretErr, status := getSecretWithName(c, secret.Name)
-	if getSecretErr != nil {
-		return status, nil, fmt.Errorf(
-			"cannot get secret with name: %s. Error: %s",
-			secret.Name,
-			getSecretErr.Error(),
-		)
-	}
-
-	updateSecretErr := c.SecretUpdate(context.Background(), foundSecret.ID, foundSecret.Version, swarm.SecretSpec{
-		Annotations: swarm.Annotations{
-			Name: secret.Name,
-			Labels: map[string]string{
-				ownerLabel: ownerLabelValue,
-			},
-		},
-		Data: []byte(secret.Value),
-	})
-
-	if updateSecretErr != nil {
-		return http.StatusInternalServerError, nil, fmt.Errorf(
-			"couldn't update secret (name: %s, ID: %s) because of error: %s",
-			secret.Name,
-			foundSecret.ID,
-			updateSecretErr.Error(),
-		)
-	}
-
-	return http.StatusOK, nil, nil
-}
-
 func deleteSecret(c client.SecretAPIClient, body []byte) (responseStatus int, responseBody []byte, err error) {
 	var secret requests.Secret
 
@@ -234,7 +188,7 @@ func deleteSecret(c client.SecretAPIClient, body []byte) (responseStatus int, re
 		)
 	}
 
-	foundSecret, getSecretErr, status := getSecretWithName(c, secret.Name)
+	foundSecret, status, getSecretErr := getSecretWithName(c, secret.Name)
 	if getSecretErr != nil {
 		return status, nil, fmt.Errorf(
 			"cannot get secret with name: %s, which you want to remove. Error: %s",
