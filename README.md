@@ -1,7 +1,7 @@
 faas-swarm
 ==========
 
-[![Build Status](https://travis-ci.org/openfaas/faas-swarm.svg?branch=master)](https://travis-ci.org/openfaas/faas-swarm)
+[![Build Status](https://travis-ci.com/openfaas/faas-swarm.svg?branch=master)](https://travis-ci.com/openfaas/faas-swarm)
 
 ## Summary
 
