@@ -1,6 +1,8 @@
+FROM teamserverless/license-check:0.3.6 as license-check
+
 FROM golang:1.11 as build
-RUN curl -sLSf https://raw.githubusercontent.com/teamserverless/license-check/master/get.sh | sh
-RUN mv ./license-check /usr/bin/license-check && chmod +x /usr/bin/license-check
+
+COPY --from=license-check /license-check /usr/bin/
 
 RUN mkdir -p /go/src/github.com/openfaas/faas-swarm/
 
