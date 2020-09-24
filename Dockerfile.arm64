@@ -1,6 +1,7 @@
 FROM teamserverless/license-check:0.3.6 as license-check
 
-FROM golang:1.11 as build
+FROM golang:1.13 as build
+ARG GO111MODULE=off
 
 COPY --from=license-check /license-check /usr/bin/
 
@@ -21,7 +22,7 @@ RUN gofmt -l -d $(find . -type f -name '*.go' -not -path "./vendor/*") \
     -X github.com/openfaas/faas-swarm/version.Version=${VERSION}" \
     -a -installsuffix cgo -o faas-swarm .
 
-FROM alpine:3.10 as ship
+FROM alpine:3.12 as ship
 
 LABEL org.label-schema.license="MIT" \
       org.label-schema.vcs-url="https://github.com/openfaas/faas-swarm" \

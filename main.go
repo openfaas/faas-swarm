@@ -53,19 +53,18 @@ func main() {
 	funcProxyHandler := handlers.NewFunctionLookup(dockerClient, cfg.DNSRoundRobin)
 
 	bootstrapHandlers := bootTypes.FaaSHandlers{
-		DeleteHandler:  handlers.DeleteHandler(dockerClient),
-		DeployHandler:  handlers.DeployHandler(dockerClient, maxRestarts, restartDelay),
-		FunctionReader: handlers.FunctionReader(true, dockerClient),
-		FunctionProxy:  proxy.NewHandlerFunc(cfg.FaaSConfig, funcProxyHandler),
-		ReplicaReader:  handlers.ReplicaReader(dockerClient),
-		ReplicaUpdater: handlers.ReplicaUpdater(dockerClient),
-		UpdateHandler:  handlers.UpdateHandler(dockerClient, maxRestarts, restartDelay),
-		HealthHandler:  handlers.Health(),
-		InfoHandler:    handlers.MakeInfoHandler(version.BuildVersion(), version.GitCommit),
-		SecretHandler:  handlers.MakeSecretsHandler(dockerClient),
-		LogHandler:     logs.NewLogHandlerFunc(handlers.NewLogRequester(dockerClient), cfg.FaaSConfig.WriteTimeout),
+		DeleteHandler:        handlers.DeleteHandler(dockerClient),
+		DeployHandler:        handlers.DeployHandler(dockerClient, maxRestarts, restartDelay),
+		FunctionReader:       handlers.FunctionReader(true, dockerClient),
+		FunctionProxy:        proxy.NewHandlerFunc(cfg.FaaSConfig, funcProxyHandler),
+		ReplicaReader:        handlers.ReplicaReader(dockerClient),
+		ReplicaUpdater:       handlers.ReplicaUpdater(dockerClient),
+		UpdateHandler:        handlers.UpdateHandler(dockerClient, maxRestarts, restartDelay),
+		HealthHandler:        handlers.Health(),
+		InfoHandler:          handlers.MakeInfoHandler(version.BuildVersion(), version.GitCommit),
+		SecretHandler:        handlers.MakeSecretsHandler(dockerClient),
+		LogHandler:           logs.NewLogHandlerFunc(handlers.NewLogRequester(dockerClient), cfg.FaaSConfig.WriteTimeout),
 		ListNamespaceHandler: handlers.NamespaceLister(),
-
 	}
 
 	bootstrapConfig := bootTypes.FaaSConfig{

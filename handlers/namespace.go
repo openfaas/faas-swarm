@@ -23,4 +23,3 @@ func NamespaceLister() http.HandlerFunc {
 		w.Write(nsJSON)
 	}
 }
-

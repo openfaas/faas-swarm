@@ -1,7 +1,8 @@
 FROM teamserverless/license-check:0.3.6 as license-check
 
-FROM golang:1.11 as build
-
+FROM golang:1.13 as build
+ARG GO111MODULE=off
+ARG CGO_ENABLED=0
 COPY --from=license-check /license-check /usr/bin/
 
 RUN mkdir -p /go/src/github.com/openfaas/faas-swarm/
@@ -12,16 +13,18 @@ COPY . .
 
 RUN license-check -path /go/src/github.com/openfaas/faas-swarm/ --verbose=false "Alex Ellis" "OpenFaaS Author(s)"
 
-RUN gofmt -l -d $(find . -type f -name '*.go' -not -path "./vendor/*") \
-    && CGO_ENABLED=0 go test $(go list ./... | grep -v /vendor/) -cover \
-    && VERSION=$(git describe --all --exact-match `git rev-parse HEAD` | grep tags | sed 's/tags\///') \
+RUN gofmt -l -d $(find . -type f -name '*.go' -not -path "./vendor/*")
+
+RUN CGO_ENABLED=$CGO_ENABLED go test $(go list ./... | grep -v /vendor/) -cover
+
+RUN VERSION=$(git describe --all --exact-match `git rev-parse HEAD` | grep tags | sed 's/tags\///') \
     && GIT_COMMIT=$(git rev-list -1 HEAD) \
-    && CGO_ENABLED=0 GOOS=linux go build --ldflags "-s -w \
+    && CGO_ENABLED=$CGO_ENABLED GOOS=linux go build --ldflags "-s -w \
     -X github.com/openfaas/faas-swarm/version.GitCommit=${GIT_COMMIT}\
     -X github.com/openfaas/faas-swarm/version.Version=${VERSION}" \
     -a -installsuffix cgo -o faas-swarm .
 
-FROM alpine:3.10 as ship
+FROM alpine:3.12 as ship
 
 LABEL org.label-schema.license="MIT" \
       org.label-schema.vcs-url="https://github.com/openfaas/faas-swarm" \
