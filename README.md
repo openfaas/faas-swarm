@@ -3,6 +3,14 @@ faas-swarm
 
 [![Build Status](https://travis-ci.com/openfaas/faas-swarm.svg?branch=master)](https://travis-ci.com/openfaas/faas-swarm)
 
+## Status - 15th December 2020
+
+Whilst faas-swarm may still work, it is no longer being supported by the community. You can ask about commercial support by emailing support@openfaas.com.
+
+No community support or free updates are available.
+
+See alternatives: [Deploying OpenFaaS](https://docs.openfaas.com/deployment/)
+
 ## Summary
 
 This is the Docker Swarm provider for OpenFaaS.
